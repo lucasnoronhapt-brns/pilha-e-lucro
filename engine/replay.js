@@ -9,10 +9,11 @@
      {t:'trocar', ids:[..]}  — troca seletiva dos índices marcados
      {t:'lixo'}
      {t:'comprar', i}        — oferta i da loja
+     {t:'vender', tipo, i}   — vende staff ('s') ou receita ('r') i por metade do preço
      {t:'continuar'}         — próxima ronda
 */
 
-import { novaRun, colocar, servir, trocar, lixo, comprar, proximaRonda, maoTutorial } from './game.js';
+import { novaRun, colocar, servir, trocar, lixo, comprar, vender, proximaRonda, maoTutorial } from './game.js';
 
 const ACOES = {
   tutorial:  (st,a)=>maoTutorial(st),
@@ -21,6 +22,7 @@ const ACOES = {
   trocar:    (st,a)=>trocar(st, a.ids),
   lixo:      (st,a)=>lixo(st),
   comprar:   (st,a)=>comprar(st, a.i),
+  vender:    (st,a)=>vender(st, a.tipo, a.i),
   continuar: (st,a)=>proximaRonda(st),
 };
 

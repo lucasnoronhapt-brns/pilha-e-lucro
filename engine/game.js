@@ -166,6 +166,20 @@ export function comprar(st, i){
   return {ok:true, oferta:of};
 }
 
+/* Vender um staff ('s') ou receita ('r') na loja por metade do preço
+   (arredondado para baixo) — liberta o slot para comprar outra. */
+export function vender(st, tipo, i){
+  if(st.fase!=='loja') return {ok:false, reason:'fase'};
+  const lista = tipo==='s' ? st.staff : (tipo==='r' ? st.receitas : null);
+  if(!lista) return {ok:false, reason:'tipo'};
+  if(!Number.isInteger(i) || i<0 || i>=lista.length) return {ok:false, reason:'indice'};
+  st.log.push({t:'vender', tipo, i});
+  const [o] = lista.splice(i, 1);
+  const valor = Math.floor(o.preco/2);
+  st.money += valor;
+  return {ok:true, o, valor};
+}
+
 export function proximaRonda(st){
   if(st.fase!=='loja') return {ok:false, reason:'fase'};
   st.log.push({t:'continuar'});

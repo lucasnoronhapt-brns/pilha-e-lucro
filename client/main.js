@@ -86,6 +86,7 @@ function renderHUD(){
 function abrirInfo(emoji, o){
   $('minfonome').textContent = `${emoji} ${o.n}`;
   $('minfodesc').textContent = o.d;
+  $('bvender').style.display = 'none';
   $('minfo').classList.add('show');
 }
 function renderCrew(){
@@ -343,17 +344,56 @@ function resolverFim(fim){
   if(fim==='fim') return gameOver();
   renderHUD();
 }
+function refreshAfford(){
+  document.querySelectorAll('#offers .scard').forEach(c=>{
+    if(!c.classList.contains('sold')){
+      c.classList.toggle('poor', parseInt(c.dataset.preco) > G.money);
+    }
+  });
+}
+/* mini-cartas do que já tens, vendáveis por metade do preço (liberta o slot) */
+function renderMeus(){
+  const box = $('meus'); box.innerHTML='';
+  if(G.staff.length===0 && G.receitas.length===0){ box.style.display='none'; return; }
+  box.style.display='flex';
+  const lbl = document.createElement('span');
+  lbl.className='vlbl'; lbl.textContent='Vender:';
+  box.appendChild(lbl);
+  const grupo = (emoji, lista, tipo, frame)=>{
+    lista.forEach((o,i)=>{
+      const valor = Math.floor(o.preco/2);
+      const m = document.createElement('div'); m.className='mcard';
+      m.style.backgroundImage = `url(${frame})`;
+      m.innerHTML = `<span class="vprice">${valor}€</span><img src="${arteCarta(o.icon)}">`;
+      m.onclick = ()=>abrirVenda(emoji, tipo, i, o, valor);
+      box.appendChild(m);
+    });
+  };
+  grupo('👤', G.staff, 's', SPR.card_staff);
+  grupo('📖', G.receitas, 'r', SPR.card_receita);
+}
+function abrirVenda(emoji, tipo, i, o, valor){
+  $('minfonome').textContent = `${emoji} ${o.n}`;
+  $('minfodesc').textContent = o.d;
+  const b = $('bvender');
+  b.style.display = 'block';
+  b.textContent = `💰 VENDER POR ${valor}€`;
+  b.onclick = ()=>{
+    $('minfo').classList.remove('show');
+    const r = Engine.vender(G, tipo, i);
+    if(!r.ok) return;
+    beep(500,.06); beep(380,.08);
+    $('shopmsg').textContent = `💰 ${o.n} vendido por ${r.valor}€.`;
+    renderMeus(); renderCrew(); renderHUD(); refreshAfford();
+  };
+  $('minfo').classList.add('show');
+}
 function mostrarLoja(){
   const L = G.loja;
   $('resumo').innerHTML = `Alvo <b>${Engine.alvo(G.ronda)}</b> batido com <b>${G.pts} pts</b>.<br>Ganhas <b>${L.bonus}€</b> (4 base + ${L.servesRest} serviços + ${L.trocasRest} trocas não usados).<br>Caixa: <b>${G.money}€</b>`;
+  $('shopmsg').textContent = '';
+  renderMeus();
   const off = $('offers'); off.innerHTML='';
-  const refreshAfford = ()=>{
-    off.querySelectorAll('.scard').forEach(c=>{
-      if(!c.classList.contains('sold')){
-        c.classList.toggle('poor', parseInt(c.dataset.preco) > G.money);
-      }
-    });
-  };
   L.ofertas.forEach(({o,t}, i)=>{
     const div = document.createElement('div');
     div.className = 'scard';
@@ -366,14 +406,14 @@ function mostrarLoja(){
     div.onclick = ()=>{
       const r = Engine.comprar(G, i);
       if(!r.ok){
-        if(r.reason==='slots') toast('Slots cheios!');
+        if(r.reason==='slots') $('shopmsg').textContent = '⚠️ Slots cheios — vende uma carta em cima primeiro.';
         return;
       }
       div.classList.add('sold');
       div.querySelector('.sprice').textContent='✓';
       beep(700,.06);beep(950,.08);
-      renderCrew(); renderHUD();
-      $('resumo').innerHTML += `<br>→ <b>${o.n}</b> contratado!`;
+      renderCrew(); renderHUD(); renderMeus();
+      $('shopmsg').textContent = `→ ${o.n} contratado!`;
       refreshAfford();
     };
     off.appendChild(div);

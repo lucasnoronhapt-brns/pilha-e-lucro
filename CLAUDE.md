@@ -7,7 +7,7 @@ Roguelike de montagem de hambúrgueres inspirado na estrutura do Balatro (runs, 
 **M1 (migração) concluído** — jul 2026. O protótipo foi separado em `engine/` + `client/` + `tests/`, com jogabilidade idêntica ao v0.2:
 - `engine/` — ES modules puros (zero DOM, zero `Math.random()`): `rng.js` (mulberry32), `data.js`, `game.js` (estado + ações com validação de legalidade + scoring), `replay.js` (re-simula um action_log)
 - Fases explícitas no estado (`jogo`/`loja`/`fim`); ações ilegais devolvem `{ok:false, reason}`
-- **Action log**: cada ação legal é registada pelo próprio engine em `state.log` (`tutorial`, `colocar` — inclui tombas —, `servir`, `trocar`, `lixo`, `comprar`, `continuar`); no browser inspeciona-se com `__run.log`
+- **Action log**: cada ação legal é registada pelo próprio engine em `state.log` (`tutorial`, `colocar` — inclui tombas —, `servir`, `trocar`, `lixo`, `comprar`, `vender`, `continuar`); no browser inspeciona-se com `__run.log`
 - Seed: por agora gerada no cliente (`crypto.getRandomValues`, visível na consola) — passa a vir do servidor no M2
 - `Math.random()` só sobrevive no client em efeitos visuais/áudio (posição de floats, vibrato de beeps)
 - Sprites extraídos do base64 para `assets/sprites/` (31 PNG + fundo.jpg); o v0.2 usa 32 dos ~60 do acervo
@@ -24,7 +24,7 @@ O ficheiro original `pilha_e_lucro_v0_2.html` (411 KB, sprites em base64) fica *
 - Pontuação = fichas × mult, com preview ao vivo e animação de scoring passo a passo ao servir
 - **Rondas**: alvo = round(100 · r^1.55 / 10)·10 + 20; 4 serviços e 3 trocas por ronda; falha = game over com estatísticas
 - **Boss a cada 3 rondas**: Crítico Vegetariano (proteínas = 0 fichas), Cliente Apressado (máx 6 camadas), Sem Frescos (frescos = 0)
-- **Loja entre rondas**: 2 staff + 2 receitas aleatórias, renderizadas com molduras de carta; dinheiro = 4 + serviços não usados + trocas não usadas
+- **Loja entre rondas**: 2 staff + 2 receitas aleatórias, renderizadas com molduras de carta; dinheiro = 4 + serviços não usados + trocas não usadas. **Vender** (jul 2026): na loja podes vender staff/receitas por metade do preço (floor; Cheeseburger inicial vende por 0€) para libertar slots — ação `vender` no log, fila "Vender:" com confirmação em popup
 - 6 receitas (padrões contíguos ou por contagem; máx 3 slots), 7 staff passivos (máx 3 slots) — inclui Chef do Bacon
 - Detalhe visual importante: queijo usa sprite "frio" por defeito e troca para "derretendo" quando colocado sobre proteína
 - **Tutorial guiado** (obrigatório manter): primeiro burger passo a passo com destaque e bloqueio de ações — paredes de texto NÃO funcionam (validado com o autor)

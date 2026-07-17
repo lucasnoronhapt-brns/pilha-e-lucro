@@ -129,6 +129,16 @@ button{font-family:inherit;cursor:pointer;border:none}
 }
 #minfo .panel{max-width:300px;text-align:center}
 #minfodesc{font-size:12px;line-height:1.6}
+/* vender na loja (mini-cartas do que já tens, com valor de venda) */
+#meus{display:none;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+#meus .vlbl{font-size:11px;font-weight:800;opacity:.9}
+#meus .mcard{width:44px}
+.mcard .vprice{
+  position:absolute;top:-7px;right:-6px;background:var(--mostarda);color:var(--tinta);
+  font-size:10px;font-weight:800;border:2px solid var(--tinta);border-radius:7px;
+  padding:1px 4px;box-shadow:0 2px 0 var(--tinta);z-index:2;
+}
+#shopmsg{font-size:12px;font-weight:700;color:var(--mostarda);min-height:16px;margin:4px 0}
 
 /* ---------- Stage ---------- */
 #stage{
@@ -370,7 +380,9 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div class="panel">
     <h2>✅ Ronda ganha!</h2>
     <div id="resumo"></div>
+    <div id="meus"></div>
     <div id="offers"></div>
+    <div id="shopmsg"></div>
     <button class="go" id="bcontinuar">PRÓXIMA RONDA →</button>
   </div>
 </div>
@@ -403,6 +415,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div class="panel">
     <h2 id="minfonome"></h2>
     <div class="sub" id="minfodesc"></div>
+    <button class="go" id="bvender" style="display:none;background:linear-gradient(180deg,#ffd257,var(--mostarda));color:var(--tinta)"></button>
     <button class="go" onclick="document.getElementById('minfo').classList.remove('show')">FECHAR</button>
   </div>
 </div>
