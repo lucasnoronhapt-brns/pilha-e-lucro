@@ -123,13 +123,21 @@ function renderStab(){
   }
 }
 
-function sprOf(key, idx){
-  if(key==='queijo'){
-    const abaixo = idx>0 ? G.stack[idx-1] : null;
+/* sprites por estado de frescura (só a alface tem arte dedicada por agora;
+   os restantes usam filtro CSS até chegarem os sprites do acervo) */
+const SPR_ESTADO = { alface: {murcho:'alface_murcha', estragado:'alface_estragada'} };
+function sprCarta(k, estado){
+  const esp = SPR_ESTADO[k] && SPR_ESTADO[k][estado];
+  return SPR[esp || ING[k].spr || k];
+}
+function sprOf(c, idx){
+  const k = Engine.chave(c);
+  if(k==='queijo'){
+    const abaixo = idx>0 ? Engine.chave(G.stack[idx-1]) : null;
     if((abaixo && ING[abaixo].cat==='proteina') || Engine.temStaff(G,'estufa')) return SPR['queijo_derretendo'];
     return SPR['queijo_frio'];
   }
-  return SPR[ING[key].spr||key];
+  return sprCarta(k, Engine.frescura(k, Engine.idadeDe(c)).estado);
 }
 function renderStack(){
   const st = $('stack'); st.innerHTML='';
@@ -138,9 +146,10 @@ function renderStack(){
   base.src = SPR.pao_base; base.className='layer'; base.style.bottom='0px'; base.style.zIndex=1;
   st.appendChild(base);
   y = 26;
-  G.stack.forEach((k,i)=>{
+  G.stack.forEach((c,i)=>{
+    const k = Engine.chave(c);
     const im = document.createElement('img');
-    im.src = sprOf(k,i); im.className='layer';
+    im.src = sprOf(c,i); im.className='layer';
     im.style.bottom = y+'px'; im.style.zIndex = i+2;
     st.appendChild(im);
     const hpx = {carne:20,frango:18,bacon:16,ovo:16,queijo:10,alface:16,tomate:14,cebola:11,picles:11,ketchup:9,maionese:9,molho_especial:10}[k]||14;
@@ -153,8 +162,13 @@ function renderStack(){
 function renderHand(){
   const h = $('hand'); h.innerHTML='';
   let hiDone = false;
-  G.hand.forEach((k,i)=>{
+  G.hand.forEach((carta,i)=>{
+    const k = Engine.chave(carta), idade = Engine.idadeDe(carta);
+    const fr = Engine.frescura(k, idade);
+    const vida = ING[k].vida;
     const c = document.createElement('div'); c.className='card';
+    if(fr.estado==='auge') c.classList.add('auge');
+    if(fr.estado==='estragado') c.classList.add('estragado');
     if(swapMode && swapSel.has(i)) c.classList.add('sel');
     if(TUT.active && TUT.expect){
       if(k===TUT.expect && !hiDone){ c.classList.add('tut-hi'); hiDone=true; }
@@ -162,7 +176,16 @@ function renderHand(){
     } else if(TUT.active && TUT.step>=3 && TUT.step<5){
       c.classList.add('tut-dis');
     }
-    c.innerHTML = `<span class="st">⚖${ING[k].peso}</span><img src="${SPR[ING[k].spr||k]}"><div class="nm">${ING[k].n}</div><div class="pts">+${ING[k].chips} fichas</div>`;
+    /* badge de frescura: rondas restantes · ⭐ auge · 💀 estragado; conservas sem badge */
+    const badge = !vida ? '' :
+      fr.estado==='estragado' ? '<span class="fresc m">💀</span>' :
+      fr.estado==='auge' ? '<span class="fresc">⭐</span>' :
+      `<span class="fresc${fr.estado==='murcho'?' m':''}">${vida-idade}🕒</span>`;
+    const temSpriteEstado = SPR_ESTADO[k] && SPR_ESTADO[k][fr.estado];
+    const imgCls = (!temSpriteEstado && fr.estado==='murcho') ? ' class="fdim"' :
+                   (!temSpriteEstado && fr.estado==='estragado') ? ' class="fdead"' : '';
+    const pts = fr.estado==='estragado' ? '💀 estragado' : `+${Math.round(ING[k].chips*fr.fator)} fichas`;
+    c.innerHTML = `${badge}<span class="st">⚖${ING[k].peso}</span><img${imgCls} src="${sprCarta(k, fr.estado)}"><div class="nm">${ING[k].n}</div><div class="pts">${pts}</div>`;
     c.onclick = ()=>place(i);
     h.appendChild(c);
   });
@@ -219,11 +242,12 @@ const swapSel = new Set();
 function place(i){
   if(busy) return;
   if(swapMode){ toggleSel(i); return; }
-  if(TUT.active && TUT.expect && G.hand[i]!==TUT.expect) return;
+  if(TUT.active && TUT.expect && Engine.chave(G.hand[i])!==TUT.expect) return;
   const notasAntes = Engine.calc(G).notas;
   const r = Engine.colocar(G, i);
   if(!r.ok){
     if(r.reason==='cap') toast('⏱️ O cliente não aceita mais camadas!');
+    if(r.reason==='estragado') toast('💀 Estragado! Descarta-o com uma troca.');
     return;
   }
   if(r.evento==='tomba') return tomba(r.fim);
@@ -609,7 +633,7 @@ function abrirLivro(){
     const o = ING[k];
     const d = document.createElement('div');
     d.className = 'cing';
-    d.innerHTML = `<img src="${arteCarta(o.spr||k)}"><div class="nm">${o.n}</div><div class="inf">+${o.chips} <span class="peso">⚖${o.peso}</span></div>`;
+    d.innerHTML = `<img src="${arteCarta(o.spr||k)}"><div class="nm">${o.n}</div><div class="inf">+${o.chips} <span class="peso">⚖${o.peso}</span> 🕒${o.vida??'∞'}</div>`;
     g.appendChild(d);
   }
 
@@ -632,8 +656,13 @@ renderHand(); renderStack(); renderHUD(); renderCrew();
    (seed 42, Fresquinho ativo, boss visível) para screenshots — offline, nunca submete */
 if(QS.has('semintro') || QS.has('demo')) $('intro').classList.remove('show');
 if(QS.has('demo')){
-  ['alface','tomate','bacon'].forEach(k=>{ const i=G.hand.indexOf(k); if(i>=0) Engine.colocar(G,i); });
+  ['alface','tomate','bacon'].forEach(k=>{ const i=G.hand.findIndex(c=>Engine.chave(c)===k); if(i>=0) Engine.colocar(G,i); });
   G.boss = BOSSES[0]; // só visual: estado de demo não é submetível
+  // mostra os estados de frescura na mão (visual, offline)
+  const comVida = G.hand.filter(c=>ING[Engine.chave(c)].vida);
+  if(comVida[0]) comVida[0].idade = 1;   // ⭐ auge
+  if(comVida[1]) comVida[1].idade = 2;   // murcho
+  if(comVida[2]) comVida[2].idade = 99;  // 💀 estragado
   renderHand(); renderStack(); renderHUD();
   if(QS.get('demo')==='loja'){ G.pts = 200; resolverFim(Engine.servir(G).fim); }
   if(QS.get('demo')==='troca'){ swapMode=true; swapSel.add(0); swapSel.add(2); renderHand(); updateTrocarBtn(); }

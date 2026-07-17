@@ -1,19 +1,21 @@
 /* Dados do jogo — copiados verbatim do pilha_e_lucro_v0_2.html.
    Módulo puro: sem DOM, sem estado mutável (POOL é construído uma vez). */
 
+/* vida = rondas até estragar (M3): frescos 2-3, estáveis 5-6;
+   sem vida = conserva, nunca estraga (picles, ketchup, maionese) */
 export const ING = {
-  carne:{n:'Carne',chips:22,cat:'proteina',peso:1},
-  frango:{n:'Frango',chips:18,cat:'proteina',peso:1},
-  bacon:{n:'Bacon',chips:14,cat:'proteina',peso:1},
-  ovo:{n:'Ovo',chips:12,cat:'proteina',peso:1},
-  queijo:{n:'Queijo',chips:10,cat:'laticinio',peso:1,spr:'queijo_frio'},
-  alface:{n:'Alface',chips:8,cat:'fresco',peso:1},
-  tomate:{n:'Tomate',chips:8,cat:'fresco',peso:1},
-  cebola:{n:'Cebola',chips:7,cat:'fresco',peso:2},
+  carne:{n:'Carne',chips:22,cat:'proteina',peso:1,vida:5},
+  frango:{n:'Frango',chips:18,cat:'proteina',peso:1,vida:5},
+  bacon:{n:'Bacon',chips:14,cat:'proteina',peso:1,vida:5},
+  ovo:{n:'Ovo',chips:12,cat:'proteina',peso:1,vida:5},
+  queijo:{n:'Queijo',chips:10,cat:'laticinio',peso:1,vida:5,spr:'queijo_frio'},
+  alface:{n:'Alface',chips:8,cat:'fresco',peso:1,vida:2},
+  tomate:{n:'Tomate',chips:8,cat:'fresco',peso:1,vida:2},
+  cebola:{n:'Cebola',chips:7,cat:'fresco',peso:2,vida:3},
   picles:{n:'Picles',chips:6,cat:'fresco',peso:1},
   ketchup:{n:'Ketchup',chips:5,cat:'molho',peso:2},
   maionese:{n:'Maionese',chips:5,cat:'molho',peso:2},
-  molho_especial:{n:'M. Especial',chips:9,cat:'molho',peso:2},
+  molho_especial:{n:'M. Especial',chips:9,cat:'molho',peso:2,vida:6},
 };
 
 export const POOL = [];
