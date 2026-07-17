@@ -21,6 +21,12 @@ const SPRITE_KEYS = [
 const SPR = Object.fromEntries(SPRITE_KEYS.map(k=>[k, `../assets/sprites/${k}.png`]));
 SPR.fundo = '../assets/sprites/fundo_v2.png'; // M1.5: cozinha sem menu — o alvo vive no quadro chalkboard
 
+/* Arte dedicada para cartas (loja + mini-cartas): quando existir
+   assets/sprites/card_art_<icon>.png, acrescenta o icon a este Set e a carta
+   usa-a; senão cai para o sprite normal do ingrediente. */
+const CARD_ART = new Set([]);
+const arteCarta = icon => CARD_ART.has(icon) ? `../assets/sprites/card_art_${icon}.png` : SPR[icon];
+
 /* ============ RUN ============ */
 /* A seed vem do servidor (POST /api/run/start) — o cliente nunca a escolhe.
    Sem servidor (ex.: abrir só os estáticos), a run funciona offline com seed
@@ -88,7 +94,7 @@ function renderCrew(){
     lista.forEach(o=>{
       const m = document.createElement('div'); m.className='mcard';
       m.style.backgroundImage = `url(${frame})`;
-      m.innerHTML = `<img src="${SPR[o.icon]}">`;
+      m.innerHTML = `<img src="${arteCarta(o.icon)}">`;
       m.onclick = ()=>abrirInfo(emoji, o);
       g.appendChild(m);
     });
@@ -351,9 +357,8 @@ function mostrarLoja(){
     div.style.backgroundImage = `url(${t==='s'?SPR.card_staff:SPR.card_receita})`;
     div.innerHTML = `
       <span class="sprice">${o.preco}€</span>
-      <img class="sart" src="${SPR[o.icon]}">
-      <div class="sname">${o.n}</div>
-      <div class="sdesc">${o.d}</div>`;
+      <img class="sart" src="${arteCarta(o.icon)}">
+      <div class="stxt"><div class="sname">${o.n}</div><div class="sdesc">${o.d}</div></div>`;
     div.onclick = ()=>{
       const r = Engine.comprar(G, i);
       if(!r.ok){
@@ -532,4 +537,6 @@ if(QS.has('demo')){
   ['alface','tomate','bacon'].forEach(k=>{ const i=G.hand.indexOf(k); if(i>=0) Engine.colocar(G,i); });
   G.boss = BOSSES[0]; // só visual: estado de demo não é submetível
   renderHand(); renderStack(); renderHUD();
+  if(QS.get('demo')==='loja'){ G.pts = 200; resolverFim(Engine.servir(G).fim); }
+  if(QS.get('demo')==='troca'){ swapMode=true; swapSel.add(0); swapSel.add(2); renderHand(); updateTrocarBtn(); }
 }

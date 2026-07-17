@@ -41,7 +41,17 @@
       "Bash(gh auth *)",
       "Bash(git config *)",
       "Bash(git init *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "PowerShell(winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements --silent)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" --version)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" auth status)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" repo create pilha-e-lucro --public --source . --push)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api repos/lucasnoronhapt-brns/pilha-e-lucro/pages -X POST -f \"source[branch]=main\" -f \"source[path]=/\")",
+      "PowerShell($edge = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; if \\(-not \\(Test-Path $edge\\)\\) { $edge = \"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $out = \"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-pilha-e-lucro-v0-2-html\\\\315b43c0-1ee7-4a8e-b6fa-a363b413b143\\\\scratchpad\"; & $edge --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=15000 --window-size=1280,800 --screenshot=\"$out\\\\pages_live.png\" \"https://lucasnoronhapt-brns.github.io/pilha-e-lucro/client/?semintro\" | Out-Null; Write-Host ok)",
+      "Bash(git push *)",
+      "PowerShell($edge = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; if \\(-not \\(Test-Path $edge\\)\\) { $edge = \"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $out = \"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-pilha-e-lucro-v0-2-html\\\\315b43c0-1ee7-4a8e-b6fa-a363b413b143\\\\scratchpad\"; & $edge --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=780,1688 --screenshot=\"$out\\\\fix_loja.png\" \"http://localhost:8000/client/?demo=loja\" | Out-Null; Start-Sleep 2; & $edge --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=780,1688 --screenshot=\"$out\\\\fix_troca.png\" \"http://localhost:8000/client/?demo=troca\" | Out-Null; Write-Host ok)",
+      "PowerShell($edge = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; if \\(-not \\(Test-Path $edge\\)\\) { $edge = \"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $out = \"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-pilha-e-lucro-v0-2-html\\\\315b43c0-1ee7-4a8e-b6fa-a363b413b143\\\\scratchpad\"; & $edge --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=780,1688 --screenshot=\"$out\\\\fix_loja2.png\" \"http://localhost:8000/client/?demo=loja\" | Out-Null; Write-Host ok)",
+      "PowerShell($edge = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; if \\(-not \\(Test-Path $edge\\)\\) { $edge = \"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $out = \"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-pilha-e-lucro-v0-2-html\\\\315b43c0-1ee7-4a8e-b6fa-a363b413b143\\\\scratchpad\"; & $edge --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=780,1688 --screenshot=\"$out\\\\fix_loja3.png\" \"http://localhost:8000/client/?demo=loja\" | Out-Null; Write-Host ok)"
     ]
   }
 }
