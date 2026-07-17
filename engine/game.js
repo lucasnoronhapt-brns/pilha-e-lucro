@@ -4,12 +4,18 @@
    Comportamento copiado 1:1 do pilha_e_lucro_v0_2.html (referência). */
 
 import { mulberry32, shuffleSeeded } from './rng.js';
-import { ING, POOL, RECEITAS, STAFF, BOSSES } from './data.js';
+import { ING, POOL, RECEITAS, STAFF, EQUIPAMENTOS, BOSSES } from './data.js';
 
 export const alvo = r => Math.round(100*Math.pow(r,1.55)/10)*10 + 20;
 export const temStaff = (st,id) => st.staff.some(s=>s.id===id);
+export const temEquip = (st,id) => st.equip.some(e=>e.id===id);
 export const stabMax = st => st.stabMaxBase + (temStaff(st,'balcao')?3:0);
 export const stackCap = st => (st.boss && st.boss.cap) ? st.boss.cap : 99;
+/* M4 — equipamentos: slots de staff/receitas deixam de ser fixos em 3 */
+export const staffMax = st => 3 + (temEquip(st,'freezer')?1:0);
+export const receitaMax = st => 3 + (temEquip(st,'estante')?1:0);
+/* Fornecedor Direto: -1€ (mín. 1€) em qualquer oferta da loja, incluindo equipamentos */
+export const precoOferta = (st, preco) => temEquip(st,'fornecedor') ? Math.max(1, preco-1) : preco;
 
 /* M3 — perecibilidade: cartas na mão/pilha são {k, idade}; strings puras
    (testes/dados antigos) são tratadas como frescas (idade 0). */
@@ -43,7 +49,7 @@ export function novaRun(seed){
     servesBase:4, trocasBase:3, serves:4, trocas:3,
     stabMaxBase:8,
     stack:[], hand:[],
-    receitas:[RECEITAS[0]], staff:[],
+    receitas:[RECEITAS[0]], staff:[], equip:[],
     boss:null, totalBurgers:0, melhorBurger:0,
     loja:null,            // {bonus, servesRest, trocasRest, ofertas:[{o,t,sold}]}
     log:[],               // action_log da run — cada ação legal regista-se aqui;
@@ -112,11 +118,13 @@ function abrirLoja(st){
   st.money += bonus;
   const poolR = RECEITAS.filter(r=>!st.receitas.some(x=>x.id===r.id) && r.preco>0);
   const poolS = STAFF.filter(s=>!st.staff.some(x=>x.id===s.id));
-  shuffleSeeded(poolR, st.rnd); shuffleSeeded(poolS, st.rnd);
+  const poolE = EQUIPAMENTOS.filter(e=>!temEquip(st,e.id));
+  shuffleSeeded(poolR, st.rnd); shuffleSeeded(poolS, st.rnd); shuffleSeeded(poolE, st.rnd);
   st.loja = {
     bonus, servesRest:st.serves, trocasRest:st.trocas,
     ofertas: [...poolS.slice(0,2).map(o=>({o,t:'s',sold:false})),
-              ...poolR.slice(0,2).map(o=>({o,t:'r',sold:false}))],
+              ...poolR.slice(0,2).map(o=>({o,t:'r',sold:false})),
+              ...poolE.slice(0,1).map(o=>({o,t:'e',sold:false}))],
   };
 }
 
@@ -182,11 +190,13 @@ export function comprar(st, i){
   if(st.fase!=='loja') return {ok:false, reason:'fase'};
   const of = st.loja.ofertas[i];
   if(!of || of.sold) return {ok:false, reason:'indisponivel'};
-  if(st.money < of.o.preco) return {ok:false, reason:'dinheiro'};
-  if(of.t==='s' ? st.staff.length>=3 : st.receitas.length>=3) return {ok:false, reason:'slots'};
+  const preco = precoOferta(st, of.o.preco);
+  if(st.money < preco) return {ok:false, reason:'dinheiro'};
+  if(of.t==='s' && st.staff.length>=staffMax(st)) return {ok:false, reason:'slots'};
+  if(of.t==='r' && st.receitas.length>=receitaMax(st)) return {ok:false, reason:'slots'};
   st.log.push({t:'comprar', i});
-  st.money -= of.o.preco;
-  (of.t==='s'?st.staff:st.receitas).push(of.o);
+  st.money -= preco;
+  (of.t==='s'?st.staff:of.t==='r'?st.receitas:st.equip).push(of.o);
   of.sold = true;
   return {ok:true, oferta:of};
 }

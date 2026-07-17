@@ -62,7 +62,8 @@ test('servir que bate o alvo abre a loja com o bónus certo', () => {
   assert.equal(r.fim, 'loja');
   assert.equal(st.loja.bonus, 4 + 3 + 2); // serves já decrementado pelo servir
   assert.equal(st.money, money + 9);
-  assert.equal(st.loja.ofertas.length, 4); // 2 staff + 2 receitas
+  assert.equal(st.loja.ofertas.length, 5); // 2 staff + 2 receitas + 1 equipamento (M4)
   assert.ok(st.loja.ofertas.slice(0,2).every(o=>o.t==='s'));
-  assert.ok(st.loja.ofertas.slice(2).every(o=>o.t==='r'));
+  assert.ok(st.loja.ofertas.slice(2,4).every(o=>o.t==='r'));
+  assert.equal(st.loja.ofertas[4].t, 'e');
 });

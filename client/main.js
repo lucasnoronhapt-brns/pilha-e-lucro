@@ -4,7 +4,7 @@
    nunca em nada que altere o estado da run. */
 
 import * as Engine from '../engine/game.js';
-import { ING, RECEITAS, STAFF, ADJ, BOSSES } from '../engine/data.js';
+import { ING, RECEITAS, STAFF, EQUIPAMENTOS, ADJ, BOSSES } from '../engine/data.js';
 import { normalizarNome, nomeValido } from '../shared/nome.js';
 import { ENDPOINTS } from './config.js';
 
@@ -91,10 +91,10 @@ function abrirInfo(emoji, o){
 }
 function renderCrew(){
   const c = $('crew'); c.innerHTML='';
-  const grupo = (emoji, lista, frame) => {
+  const grupo = (emoji, lista, frame, max) => {
     const g = document.createElement('div'); g.className='cgrupo';
     const cnt = document.createElement('span'); cnt.className='cnt';
-    cnt.textContent = `${emoji} ${lista.length}/3`;
+    cnt.textContent = `${emoji} ${lista.length}/${max}`;
     g.appendChild(cnt);
     lista.forEach(o=>{
       const m = document.createElement('div'); m.className='mcard';
@@ -103,15 +103,16 @@ function renderCrew(){
       m.onclick = ()=>abrirInfo(emoji, o);
       g.appendChild(m);
     });
-    for(let i=lista.length;i<3;i++){
+    for(let i=lista.length;i<max;i++){
       const m = document.createElement('div'); m.className='mcard vazia';
       m.dataset.e = emoji;
       g.appendChild(m);
     }
     c.appendChild(g);
   };
-  grupo('👤', G.staff, SPR.card_staff);
-  grupo('📖', G.receitas, SPR.card_receita);
+  grupo('👤', G.staff, SPR.card_staff, Engine.staffMax(G));
+  grupo('📖', G.receitas, SPR.card_receita, Engine.receitaMax(G));
+  grupo('🔧', G.equip, SPR.card_equip, EQUIPAMENTOS.length); // M4: equipamentos, permanentes, não se vendem
 }
 function renderStab(){
   const w = $('stabwrap'); w.innerHTML='';
@@ -418,13 +419,15 @@ function mostrarLoja(){
   $('shopmsg').textContent = '';
   renderMeus();
   const off = $('offers'); off.innerHTML='';
+  const FRAME = {s:SPR.card_staff, r:SPR.card_receita, e:SPR.card_equip};
   L.ofertas.forEach(({o,t}, i)=>{
+    const preco = Engine.precoOferta(G, o.preco);
     const div = document.createElement('div');
     div.className = 'scard';
-    div.dataset.preco = o.preco;
-    div.style.backgroundImage = `url(${t==='s'?SPR.card_staff:SPR.card_receita})`;
+    div.dataset.preco = preco;
+    div.style.backgroundImage = `url(${FRAME[t]})`;
     div.innerHTML = `
-      <span class="sprice">${o.preco}€</span>
+      <span class="sprice">${preco}€</span>
       <img class="sart" src="${arteCarta(o.icon)}">
       <div class="stxt"><div class="sname">${o.n}</div><div class="sdesc">${o.d}</div></div>`;
     div.onclick = ()=>{
@@ -437,7 +440,7 @@ function mostrarLoja(){
       div.querySelector('.sprice').textContent='✓';
       beep(700,.06);beep(950,.08);
       renderCrew(); renderHUD(); renderMeus();
-      $('shopmsg').textContent = `→ ${o.n} contratado!`;
+      $('shopmsg').textContent = t==='e' ? `→ ${o.n} instalado!` : `→ ${o.n} contratado!`;
       refreshAfford();
     };
     off.appendChild(div);
@@ -593,7 +596,7 @@ function abrirLivro(){
   const sec = t => { const d=document.createElement('div'); d.className='lsec'; d.textContent=t; body.appendChild(d); };
   const grid = () => { const g=document.createElement('div'); g.className='colgrid'; body.appendChild(g); return g; };
 
-  sec('📖 Receitas · compram-se na loja · máx 3');
+  sec('📖 Receitas · compram-se na loja · máx 3 (+1 com Estante Extra)');
   let g = grid();
   RECEITAS.forEach(r=>{
     const own = G.receitas.some(x=>x.id===r.id);
@@ -601,12 +604,20 @@ function abrirLivro(){
       ()=>abrirInfo('📖', {n:r.n, d:`${r.d} · ${r.preco>0?r.preco+'€ na loja':'receita inicial'}`})));
   });
 
-  sec('👤 Staff · contrata na loja · máx 3');
+  sec('👤 Staff · contrata na loja · máx 3 (+1 com Freezer Novo)');
   g = grid();
   STAFF.forEach(s=>{
     const own = G.staff.some(x=>x.id===s.id);
     g.appendChild(cartaColecao(SPR.card_staff, s.icon, s.n, own,
       ()=>abrirInfo('👤', {n:s.n, d:`${s.d} · ${s.preco}€ na loja`})));
+  });
+
+  sec('🔧 Equipamento · compra-se na loja · permanente, não se vende');
+  g = grid();
+  EQUIPAMENTOS.forEach(e=>{
+    const own = G.equip.some(x=>x.id===e.id);
+    g.appendChild(cartaColecao(SPR.card_equip, e.icon, e.n, own,
+      ()=>abrirInfo('🔧', {n:e.n, d:`${e.d} · ${e.preco}€ na loja`})));
   });
 
   sec('🥦 Bosses · a cada 3 rondas, por esta ordem');

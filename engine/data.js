@@ -40,6 +40,14 @@ export const STAFF = [
   {id:'turno', n:'Duplo Turno', d:'+1 serviço por ronda', preco:6, icon:'ovo'},
 ];
 
+/* M4 — equipamentos: vouchers permanentes (compram-se uma vez, nunca se vendem,
+   não ocupam os slots 3/3 de staff/receitas). Efeito aplicado no engine via temEquip(). */
+export const EQUIPAMENTOS = [
+  {id:'freezer', n:'Freezer Novo', d:'+1 slot de staff (4 no total)', preco:8, icon:'queijo_frio'},
+  {id:'estante', n:'Estante Extra', d:'+1 slot de receitas (4 no total)', preco:8, icon:'pao_base'},
+  {id:'fornecedor', n:'Fornecedor Direto', d:'todas as ofertas da loja custam −1€ (mín. 1€)', preco:7, icon:'cebola'},
+];
+
 export const ADJ = [
   {e:'🧀', n:'Derretido', d:'queijo logo acima de proteína', b:'+2 mult', m:true},
   {e:'🥖', n:'Base Selada', d:'molho como 1ª camada no pão', b:'+8 fichas'},

@@ -8,8 +8,8 @@
      {t:'servir'}
      {t:'trocar', ids:[..]}  — troca seletiva dos índices marcados
      {t:'lixo'}
-     {t:'comprar', i}        — oferta i da loja
-     {t:'vender', tipo, i}   — vende staff ('s') ou receita ('r') i por metade do preço
+     {t:'comprar', i}        — oferta i da loja (staff, receita ou equipamento — M4)
+     {t:'vender', tipo, i}   — vende staff ('s') ou receita ('r') i por metade do preço (equipamento não se vende)
      {t:'continuar'}         — próxima ronda
 */
 
