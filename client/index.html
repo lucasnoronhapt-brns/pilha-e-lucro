@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pilha &amp; Lucro — v0.2</title>
+<style>
+:root{
+  --tinta:#2B1B0E; --creme:#F5E9D0; --ketchup:#D8352A; --mostarda:#F2B32A;
+  --quadro:#2E4638; --painel:rgba(30,17,10,.92); --painel2:rgba(30,17,10,.78);
+  --ok:#7AC943;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:ui-monospace,"Cascadia Mono","Courier New",monospace;
+  background:#17100b; color:var(--creme);
+  display:flex;flex-direction:column;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;
+}
+img{image-rendering:pixelated;image-rendering:crisp-edges;pointer-events:none}
+button{font-family:inherit;cursor:pointer;border:none}
+
+/* ---------- Layout + Painel de recursos (M1.5) ---------- */
+#layout{flex:1;min-height:0;display:flex;flex-direction:column}
+#principal{flex:1;min-height:0;min-width:0;display:flex;flex-direction:column}
+#painel{
+  display:grid;gap:8px;padding:8px;
+  grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
+  grid-template-areas:"recursos hero" "recursos btns";
+  background:var(--painel);border-bottom:3px solid var(--tinta);z-index:5;
+}
+#recursos{grid-area:recursos;display:grid;grid-template-columns:1fr 1fr;gap:6px;min-width:0}
+.rc{
+  background:#1a0f09;border:2px solid var(--tinta);border-radius:8px;
+  padding:3px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  line-height:1.15;min-width:64px;
+}
+.rc .rlbl{font-size:10px;opacity:.7;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.rc .rval{font-size:24px;font-weight:800}
+#rc-serves .rval{color:#4A9FE8}
+#rc-trocas .rval{color:#D8352A}
+#rc-caixa  .rval{color:#F2B32A}
+#rc-ronda  .rval{color:#E8843F}
+/* fichas × mult — o herói */
+#herobox{
+  grid-area:hero;min-width:0;background:#1a0f09;border:2px solid var(--tinta);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 10px;
+  overflow:hidden;
+}
+#heroval{font-size:clamp(22px,7vw,30px);font-weight:800;line-height:1.1;white-space:nowrap}
+#heroval span{display:inline-block}
+#heroval .hc{color:#4A9FE8}
+#heroval .hx{opacity:.75;font-size:20px;margin:0 7px}
+#heroval .hm{color:#D8352A}
+#herotot{font-size:11px;color:var(--mostarda);margin-top:2px;text-align:center}
+.pump{animation:pump .28s ease}
+@keyframes pump{0%{transform:scale(1)}40%{transform:scale(1.15)}100%{transform:scale(1)}}
+#topbtns{grid-area:btns;display:flex;flex-direction:row;gap:6px;justify-content:center;align-items:center}
+/* quadro chalkboard com o alvo + cartão de boss (M1.5 pontos 4 e 6) */
+#quadros{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:min(320px,72%);z-index:3;display:flex;flex-direction:column;gap:8px;
+}
+#chalk{
+  background:var(--quadro);border:4px solid #6b4a2a;outline:3px solid var(--tinta);border-radius:8px;
+  box-shadow:0 4px 0 rgba(0,0,0,.35), inset 0 0 24px rgba(0,0,0,.35);
+  padding:8px 14px 10px;text-align:center;
+}
+#chalk .alvolin{font-size:22px;font-weight:800;letter-spacing:1.5px;color:#fff}
+#chalk .alvolin b{color:var(--mostarda)}
+#alvobar{height:14px;background:#1a0f09;border:2px solid var(--tinta);border-radius:7px;overflow:hidden;margin:6px 0 4px}
+#alvofill{height:100%;width:0%;background:linear-gradient(180deg,#e8543f,var(--ketchup));transition:width .5s cubic-bezier(.2,.8,.3,1.2)}
+#chalk .tenslin{font-size:16px;font-weight:700;color:#cfe3d6;letter-spacing:1px}
+#chalk .tenslin b{color:#fff}
+#bosscard{
+  display:none;background:#4a1210;border:3px solid var(--tinta);border-radius:10px;
+  padding:8px 12px;align-items:center;gap:10px;color:#fff;text-align:left;
+  box-shadow:0 4px 0 rgba(0,0,0,.4);
+}
+#bosscard.show{display:flex;animation:bossin .5s cubic-bezier(.2,1.3,.4,1)}
+@keyframes bossin{from{transform:translateY(-30px) scale(.85);opacity:0}to{transform:none;opacity:1}}
+#bosscard .bico{font-size:30px;line-height:1}
+#bosscard .btit{font-size:13px;font-weight:800;letter-spacing:.5px}
+#bosscard .breg{font-size:12px;opacity:.92}
+/* adjacências ativas — lista ao lado da pilha (M1.5 ponto 3) */
+#adjlist{
+  position:absolute;left:8px;bottom:18%;z-index:3;max-width:46%;
+  display:flex;flex-direction:column-reverse;gap:4px;pointer-events:none;
+}
+.atag{
+  font-size:11px;font-weight:700;background:var(--painel);border:2px solid var(--tinta);
+  border-radius:6px;padding:3px 8px;display:flex;gap:8px;justify-content:space-between;align-items:center;
+}
+.atag .ab{white-space:nowrap;color:#6fb8e8}
+.atag .ab.m{color:#ff8f83}
+/* landscape/desktop: coluna lateral esquerda persistente, estilo Balatro */
+@media (orientation: landscape){
+  #layout{flex-direction:row}
+  #painel{
+    display:flex;flex-direction:column;flex-wrap:nowrap;width:210px;flex:0 0 210px;
+    border-bottom:none;border-right:3px solid var(--tinta);overflow-y:auto;
+    align-items:stretch;justify-content:flex-start;
+  }
+  .rc{padding:6px 8px}
+  .rc .rval{font-size:26px}
+  #herobox{padding:10px}
+  #heroval{font-size:34px}
+}
+
+/* ---------- Crew: mini-cartas (M1.5 ponto 5) ---------- */
+#crew{display:flex;gap:12px;padding:6px 10px;background:var(--painel2);overflow-x:auto;scrollbar-width:none;z-index:4;align-items:center}
+#crew::-webkit-scrollbar{display:none}
+.cgrupo{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.cgrupo .cnt{font-size:11px;font-weight:800;opacity:.9;white-space:nowrap;margin-right:2px}
+.mcard{
+  width:48px;aspect-ratio:210/294;background-size:100% 100%;background-repeat:no-repeat;
+  position:relative;flex:0 0 auto;cursor:pointer;transition:transform .08s;
+}
+.mcard:active{transform:scale(.92)}
+.mcard img{position:absolute;top:24%;left:50%;transform:translateX(-50%);width:62%;image-rendering:pixelated}
+.mcard.vazia{border:2px dashed rgba(245,233,208,.4);border-radius:6px;cursor:default}
+.mcard.vazia::after{
+  content:attr(data-e);position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;font-size:16px;opacity:.35;
+}
+#minfo .panel{max-width:300px;text-align:center}
+#minfodesc{font-size:12px;line-height:1.6}
+
+/* ---------- Stage ---------- */
+#stage{
+  position:relative;flex:1;min-height:0;overflow:hidden;
+  background:#3a2a1e center/cover no-repeat;
+}
+#stack{
+  position:absolute;left:50%;bottom:16%;transform:translateX(-50%);
+  width:min(200px,52vw);
+}
+.layer{position:absolute;left:50%;transform:translateX(-50%);width:100%;
+  filter:drop-shadow(0 3px 0 rgba(0,0,0,.35));
+  animation:drop .22s cubic-bezier(.2,1.4,.4,1)}
+@keyframes drop{0%{transform:translateX(-50%) translateY(-90px) scaleY(1.15)}70%{transform:translateX(-50%) translateY(0) scaleY(.82)}100%{transform:translateX(-50%) translateY(0) scaleY(1)}}
+#stabwrap{position:absolute;right:10px;top:64px;width:20px;bottom:22%;display:flex;flex-direction:column-reverse;gap:3px;z-index:3}
+.seg{flex:1;background:#1a0f09;border:2px solid var(--tinta);border-radius:4px}
+.seg.on{background:var(--ok)}
+.seg.warn{background:var(--mostarda)}
+.seg.hot{background:var(--ketchup)}
+#stablbl{position:absolute;right:6px;top:44px;font-size:8px;letter-spacing:1px;opacity:.8;z-index:3}
+.float{
+  position:absolute;font-weight:800;font-size:15px;z-index:6;pointer-events:none;
+  text-shadow:2px 2px 0 var(--tinta);animation:fl 1s ease-out forwards;
+}
+@keyframes fl{0%{opacity:0;transform:translateY(8px) scale(.6)}15%{opacity:1;transform:translateY(0) scale(1.15)}30%{transform:scale(1)}100%{opacity:0;transform:translateY(-46px)}}
+.shake{animation:shk .45s}
+@keyframes shk{0%,100%{transform:translate(0)}15%{transform:translate(-7px,3px)}30%{transform:translate(6px,-4px)}45%{transform:translate(-5px,-3px)}60%{transform:translate(5px,3px)}75%{transform:translate(-3px,1px)}}
+
+/* ---------- Hand ---------- */
+#handwrap{background:var(--painel);border-top:3px solid var(--tinta);padding:8px 8px 4px;z-index:5}
+#hand{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+#hand::-webkit-scrollbar{display:none}
+.card{
+  flex:0 0 auto;width:86px;background:#231409;border:2px solid #5a3d22;border-radius:9px;
+  padding:6px 4px 5px;text-align:center;transition:transform .08s;position:relative;
+}
+.card:active{transform:scale(.93)}
+.card img{width:70px;display:block;margin:2px auto}
+.card .nm{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.card .pts{font-size:9px;color:#6fb8e8}
+.card .st{position:absolute;top:3px;right:5px;font-size:8.5px;color:var(--mostarda)}
+#actions{display:flex;gap:8px;padding:0 8px 10px;background:var(--painel);z-index:5}
+.btn{
+  flex:1;padding:12px 6px;border-radius:10px;font-weight:800;font-size:13px;letter-spacing:.5px;
+  border:3px solid var(--tinta);color:var(--creme);
+  box-shadow:0 4px 0 var(--tinta);transition:transform .06s, box-shadow .06s;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tinta)}
+.btn.servir{background:linear-gradient(180deg,#e8543f,var(--ketchup))}
+.btn.trocar{background:linear-gradient(180deg,#ffd257,var(--mostarda));color:var(--tinta)}
+.btn.lixo{flex:0 0 74px;background:#5c666e}
+.btn:disabled{opacity:.4;box-shadow:0 4px 0 var(--tinta);transform:none}
+
+/* ---------- Overlays ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(15,8,4,.9);z-index:20;display:none;
+  align-items:center;justify-content:center;padding:14px;
+}
+.overlay.show{display:flex}
+.panel{
+  background:var(--quadro);border:4px solid var(--tinta);border-radius:14px;
+  padding:18px 16px;max-width:430px;width:100%;max-height:92vh;overflow-y:auto;
+  box-shadow:0 8px 0 rgba(0,0,0,.4);
+}
+.panel h2{font-size:17px;letter-spacing:1px;margin-bottom:4px;color:var(--creme);text-transform:uppercase}
+.panel .sub{font-size:11px;opacity:.85;margin-bottom:12px}
+.offer{
+  display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);
+  border:2px solid var(--tinta);border-radius:10px;padding:9px;margin-bottom:8px;
+}
+.offer .tag{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:4px;border:2px solid var(--tinta)}
+.tag.r{background:#e9d9b0;color:var(--tinta)} .tag.s{background:#b9c4cc;color:var(--tinta)}
+.offer .info{flex:1}
+.offer .info b{font-size:12px;display:block}
+.offer .info span{font-size:10px;opacity:.85;line-height:1.25;display:block}
+.offer .buy{
+  background:var(--mostarda);color:var(--tinta);font-weight:800;font-size:12px;
+  border:3px solid var(--tinta);border-radius:8px;padding:8px 10px;box-shadow:0 3px 0 var(--tinta);
+}
+.offer .buy:disabled{opacity:.4}
+.offer.sold{opacity:.45}
+.panel .go{
+  width:100%;margin-top:8px;padding:13px;border-radius:10px;font-weight:800;font-size:14px;
+  background:linear-gradient(180deg,#8fd95c,var(--ok));color:var(--tinta);
+  border:3px solid var(--tinta);box-shadow:0 4px 0 var(--tinta);
+}
+#resumo{font-size:12px;line-height:1.7;background:rgba(0,0,0,.25);border-radius:8px;padding:10px;margin-bottom:12px}
+#resumo b{color:var(--mostarda)}
+.howto{font-size:11.5px;line-height:1.6;margin-bottom:6px}
+.howto b{color:var(--mostarda)}
+#gameover .panel{background:#4a1f18}
+#deadstats{font-size:13px;line-height:1.9;margin:10px 0}
+
+/* ---------- Ranking ---------- */
+#innome{
+  width:100%;padding:10px;border-radius:8px;border:3px solid var(--tinta);
+  background:var(--creme);color:var(--tinta);font-family:inherit;font-size:13px;font-weight:700;
+  text-align:center;margin-top:8px;
+}
+#subinfo{font-size:11px;margin-top:6px;min-height:14px}
+#subinfo.err{color:#ff8f83}
+#subinfo.okk{color:var(--ok)}
+.rrow{
+  display:flex;gap:8px;font-size:12px;line-height:1.5;align-items:center;
+  background:rgba(0,0,0,.25);border-radius:6px;padding:6px 9px;margin-bottom:4px;
+}
+.rrow .pos{width:26px;font-weight:800;color:var(--mostarda)}
+.rrow .rnm{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .rpts{font-weight:800;color:#6fb8e8;white-space:nowrap}
+.rrow.eu{outline:2px solid var(--mostarda)}
+#ranking .panel{background:#3b2a1a}
+
+/* ---------- Tutorial ---------- */
+#tutbubble{
+  position:fixed;z-index:30;display:none;max-width:290px;
+  background:var(--creme);color:var(--tinta);border:3px solid var(--tinta);
+  border-radius:12px;padding:12px 14px;font-size:12.5px;font-weight:700;line-height:1.5;
+  box-shadow:0 5px 0 rgba(0,0,0,.45);
+}
+#tutbubble.show{display:block;animation:bpop .25s cubic-bezier(.2,1.5,.4,1)}
+@keyframes bpop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.tut-hi{outline:4px solid var(--mostarda) !important;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{outline-color:var(--mostarda)}50%{outline-color:#fff}}
+.tut-dis{opacity:.3;pointer-events:none}
+
+/* ---------- v0.2 ---------- */
+#blivro,#branking{
+  background:var(--creme);border:2px solid var(--tinta);border-radius:8px;
+  font-size:16px;padding:5px 8px;box-shadow:0 3px 0 var(--tinta);
+}
+#blivro:active,#branking:active{transform:translateY(2px);box-shadow:0 1px 0 var(--tinta)}
+.card.sel{border-color:var(--ketchup);background:#3a1410;transform:translateY(-8px)}
+.card.sel::after{
+  content:'✕';position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  background:var(--ketchup);color:#fff;font-size:11px;font-weight:800;
+  border:2px solid var(--tinta);border-radius:50%;width:20px;height:20px;line-height:17px;
+}
+.btn.trocar.mode{background:linear-gradient(180deg,#8fd95c,var(--ok));color:var(--tinta)}
+#livro .panel{background:#3b2a1a}
+.lsec{font-size:11px;font-weight:800;letter-spacing:1px;margin:12px 0 6px;color:var(--mostarda);text-transform:uppercase}
+.lrow{
+  display:flex;justify-content:space-between;gap:8px;font-size:11px;line-height:1.4;
+  background:rgba(0,0,0,.25);border-radius:6px;padding:6px 9px;margin-bottom:5px;
+}
+.lrow b{font-size:11.5px}
+.lrow .lb{color:#6fb8e8;white-space:nowrap;font-weight:800}
+.lrow .lb.m{color:#ff8f83}
+.lrow.off{opacity:.45}
+.lrow .own{color:var(--ok);font-weight:800}
+#offers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.scard{
+  position:relative;aspect-ratio:210/294;background-size:100% 100%;background-repeat:no-repeat;
+  cursor:pointer;transition:transform .08s;
+}
+.scard:active{transform:scale(.95)}
+.scard .sart{position:absolute;top:24%;left:50%;transform:translateX(-50%);width:62%;image-rendering:pixelated}
+.scard .sname{
+  position:absolute;top:57%;left:10%;right:10%;text-align:center;
+  font-size:10px;font-weight:800;color:var(--tinta);line-height:1.15;
+}
+.scard .sdesc{
+  position:absolute;top:70%;left:11%;right:11%;text-align:center;
+  font-size:8px;color:var(--tinta);line-height:1.3;
+}
+.scard .sprice{
+  position:absolute;top:-7px;right:-5px;background:var(--mostarda);color:var(--tinta);
+  font-size:12px;font-weight:800;border:2px solid var(--tinta);border-radius:8px;padding:3px 7px;
+  box-shadow:0 2px 0 var(--tinta);
+}
+.scard.sold{opacity:.4;pointer-events:none}
+.scard.sold .sprice{background:var(--ok)}
+.scard.poor{filter:grayscale(.7);opacity:.6;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="layout">
+  <aside id="painel">
+    <div id="recursos">
+      <div class="rc" id="rc-ronda"><span class="rlbl">Ronda</span><span class="rval" id="hronda">1</span></div>
+      <div class="rc" id="rc-caixa"><span class="rlbl">Caixa</span><span class="rval" id="hmoney">4€</span></div>
+      <div class="rc" id="rc-serves"><span class="rlbl">Serviços</span><span class="rval" id="hserves">4</span></div>
+      <div class="rc" id="rc-trocas"><span class="rlbl">Trocas</span><span class="rval" id="htrocas">3</span></div>
+    </div>
+    <div id="herobox">
+      <div id="heroval"><span class="hc" id="pchips">0</span><span class="hx">×</span><span class="hm" id="pmult">1</span></div>
+      <div id="herotot">= <span id="ptot">0</span> pts se servires já</div>
+    </div>
+    <div id="topbtns">
+      <button id="blivro" title="Livro de receitas">📖</button>
+      <button id="branking" title="Ranking">🏆</button>
+    </div>
+  </aside>
+
+  <div id="principal">
+    <div id="crew"></div>
+
+    <div id="stage">
+      <div id="quadros">
+        <div id="bosscard"></div>
+        <div id="chalk">
+          <div class="alvolin">ALVO: <b id="halvo">120</b></div>
+          <div id="alvobar"><div id="alvofill"></div></div>
+          <div class="tenslin">TENS: <b id="hpts">0</b></div>
+        </div>
+      </div>
+      <div id="adjlist"></div>
+      <span id="stablbl">EQUILÍBRIO</span>
+      <div id="stabwrap"></div>
+      <div id="stack"></div>
+    </div>
+
+    <div id="handwrap"><div id="hand"></div></div>
+    <div id="actions">
+      <button class="btn lixo" id="blixo">LIXO</button>
+      <button class="btn trocar" id="btrocar">TROCAR (3)</button>
+      <button class="btn servir" id="bservir">SERVIR 🍔</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay show" id="intro">
+  <div class="panel" style="text-align:center">
+    <h2>Pilha &amp; Lucro</h2>
+    <div class="sub">Monta burgers. Faz pontos. Bate o alvo.</div>
+    <button class="go" id="btutorial">▶ APRENDER A JOGAR (30s)</button>
+    <button class="go" style="background:#5c666e;color:var(--creme);margin-top:6px" id="bjasei">JÁ SEI JOGAR</button>
+  </div>
+</div>
+
+<div id="tutbubble">
+  <div id="tuttxt"></div>
+  <button id="tutok" class="go" style="margin-top:8px;padding:8px;display:none">OK →</button>
+</div>
+
+<div class="overlay" id="shop">
+  <div class="panel">
+    <h2>✅ Ronda ganha!</h2>
+    <div id="resumo"></div>
+    <div id="offers"></div>
+    <button class="go" id="bcontinuar">PRÓXIMA RONDA →</button>
+  </div>
+</div>
+
+<div class="overlay" id="gameover">
+  <div class="panel">
+    <h2>💀 Balcão fechado</h2>
+    <div id="deadstats"></div>
+    <div id="submitbox">
+      <input id="innome" placeholder="ex: Rita S. ou uma alcunha" maxlength="20" autocomplete="nickname">
+      <div style="font-size:11px;opacity:.8;margin-top:4px">este nome fica visível para todos os jogadores</div>
+      <button class="go" id="bsubmeter">🏆 SUBMETER PONTUAÇÃO</button>
+      <div id="subinfo"></div>
+    </div>
+    <div id="rankdead"></div>
+    <button class="go" style="background:#5c666e;color:var(--creme)" onclick="location.reload()">TENTAR OUTRA RUN</button>
+  </div>
+</div>
+
+<div class="overlay" id="ranking">
+  <div class="panel">
+    <h2>🏆 Ranking</h2>
+    <div class="sub">As melhores runs validadas pelo servidor.</div>
+    <div id="rankbody"></div>
+    <button class="go" onclick="document.getElementById('ranking').classList.remove('show')">FECHAR</button>
+  </div>
+</div>
+
+<div class="overlay" id="minfo">
+  <div class="panel">
+    <h2 id="minfonome"></h2>
+    <div class="sub" id="minfodesc"></div>
+    <button class="go" onclick="document.getElementById('minfo').classList.remove('show')">FECHAR</button>
+  </div>
+</div>
+
+<div class="overlay" id="livro">
+  <div class="panel">
+    <h2>📖 Livro do Balcão</h2>
+    <div class="sub">Tudo o que pontua — planeia a tua build.</div>
+    <div id="livrobody"></div>
+    <button class="go" onclick="document.getElementById('livro').classList.remove('show')">FECHAR</button>
+  </div>
+</div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>

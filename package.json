@@ -1,0 +1,11 @@
+{
+  "name": "pilha-e-lucro",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "node server/local/server.js",
+    "sync:supabase": "node server/supabase/sync-shared.mjs"
+  }
+}

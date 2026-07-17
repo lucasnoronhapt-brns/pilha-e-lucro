@@ -1,0 +1,12 @@
+# dados locais de dev (leaderboard de teste)
+server/local/db.json
+
+# gerado por npm run sync:supabase a partir de engine/ e shared/
+server/supabase/functions/_shared/
+
+# estado local da CLI do Supabase
+server/supabase/.temp/
+.branches
+.temp
+
+node_modules/
