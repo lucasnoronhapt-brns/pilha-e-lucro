@@ -108,7 +108,7 @@ const MIME = {
   '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg',
   '.gif':'image/gif', '.webp':'image/webp', '.ico':'image/x-icon',
 };
-const PASTAS_PUBLICAS = ['client', 'engine', 'assets', 'shared'];
+const PASTAS_PUBLICAS = ['client', 'engine', 'assets', 'shared', 'ranking'];
 async function estatico(req, res, urlPath){
   let p = decodeURIComponent(urlPath);
   if(p === '/') { res.writeHead(302, {Location:'/client/'}); return res.end(); }

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilha &amp; Lucro — Ranking</title>
+<style>
+/* Página de exibição para TV (sala de pausa): letras grandes, atualiza sozinha. */
+:root{
+  --tinta:#2B1B0E; --creme:#F5E9D0; --ketchup:#D8352A; --mostarda:#F2B32A;
+  --quadro:#2E4638; --azul:#4A9FE8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:ui-monospace,"Cascadia Mono","Courier New",monospace;
+  color:var(--creme);overflow:hidden;
+  background:#17100b url('../assets/sprites/fundo_v2.png') center/cover no-repeat;
+  display:flex;flex-direction:column;align-items:center;
+}
+body::before{
+  content:'';position:fixed;inset:0;background:rgba(15,8,4,.82);z-index:0;
+}
+header,main,footer{position:relative;z-index:1;width:min(1100px,94vw)}
+header{
+  text-align:center;padding:3.2vh 0 1.6vh;
+  font-size:clamp(22px,5.2vh,64px);font-weight:800;letter-spacing:2px;
+  text-shadow:3px 3px 0 var(--tinta);
+}
+header .burger{color:var(--mostarda)}
+main{
+  flex:1;min-height:0;background:var(--quadro);
+  border:5px solid #6b4a2a;outline:4px solid var(--tinta);border-radius:14px;
+  box-shadow:0 8px 0 rgba(0,0,0,.45), inset 0 0 40px rgba(0,0,0,.35);
+  padding:2vh 2.5vw;display:flex;flex-direction:column;gap:1vh;overflow:hidden;
+}
+.rrow{
+  display:flex;align-items:center;gap:1.6vw;
+  font-size:clamp(14px,3.6vh,40px);font-weight:700;line-height:1.3;
+  background:rgba(0,0,0,.25);border-radius:10px;padding:.7vh 1.4vw;
+}
+.rrow .pos{width:2.2em;font-weight:800;color:var(--mostarda);white-space:nowrap}
+.rrow .rnm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .rpts{font-weight:800;color:var(--azul);white-space:nowrap}
+.rrow .rrnd{font-size:.6em;opacity:.8;white-space:nowrap}
+.rrow.top1{background:rgba(242,179,42,.18);outline:3px solid var(--mostarda)}
+.rrow.vazio{justify-content:center;opacity:.85}
+footer{
+  display:flex;align-items:center;justify-content:space-between;gap:2vw;
+  padding:1.8vh 0 2.4vh;
+}
+footer .joga{display:flex;align-items:center;gap:1.2vw}
+footer img{
+  height:clamp(64px,14vh,160px);image-rendering:pixelated;
+  border:4px solid var(--tinta);border-radius:8px;
+}
+footer .txt{font-size:clamp(12px,2.6vh,28px);font-weight:700;line-height:1.5}
+footer .txt .url{color:var(--mostarda);font-size:.75em}
+#estado{font-size:clamp(10px,2vh,20px);opacity:.7;text-align:right}
+</style>
+</head>
+<body>
+
+<header><span class="burger">🍔</span> PILHA &amp; LUCRO · RANKING</header>
+<main id="lista"><div class="rrow vazio">A carregar…</div></main>
+<footer>
+  <div class="joga">
+    <img src="../assets/qr_jogo.png" alt="QR para jogar">
+    <div class="txt">📱 Lê o QR e joga!<br><span class="url">lucasnoronhapt-brns.github.io/pilha-e-lucro</span></div>
+  </div>
+  <div id="estado"></div>
+</footer>
+
+<script type="module">
+import { ENDPOINTS } from '../client/config.js';
+
+const MEDALHAS = ['🥇','🥈','🥉'];
+
+async function atualiza(){
+  const lista = document.getElementById('lista');
+  const estado = document.getElementById('estado');
+  try{
+    const lb = await (await fetch(ENDPOINTS.leaderboard)).json();
+    lista.innerHTML = '';
+    if(!lb.top.length){
+      lista.innerHTML = '<div class="rrow vazio">Ainda ninguém — sê o primeiro! 🍔</div>';
+    }
+    lb.top.forEach((e,i)=>{
+      const div = document.createElement('div');
+      div.className = 'rrow' + (i===0 ? ' top1' : '');
+      const pos = document.createElement('span'); pos.className='pos';
+      pos.textContent = MEDALHAS[i] || `${i+1}.`;
+      const nm = document.createElement('span'); nm.className='rnm';
+      nm.textContent = e.nome; // textContent: nomes nunca viram HTML
+      const pts = document.createElement('span'); pts.className='rpts';
+      pts.textContent = `${e.pts} pts`;
+      const rnd = document.createElement('span'); rnd.className='rrnd';
+      rnd.textContent = `ronda ${e.ronda}`;
+      div.append(pos, nm, pts, rnd);
+      lista.appendChild(div);
+    });
+    estado.textContent = `${lb.total} runs · atualizado ${new Date().toLocaleTimeString('pt-PT')}`;
+  }catch(e){
+    estado.textContent = 'sem ligação — tento de novo já a seguir';
+  }
+}
+atualiza();
+setInterval(atualiza, 60000);
+</script>
+</body>
+</html>
