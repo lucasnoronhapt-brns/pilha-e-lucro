@@ -28,7 +28,7 @@ O ficheiro original `pilha_e_lucro_v0_2.html` (411 KB, sprites em base64) fica *
 - 6 receitas (padrões contíguos ou por contagem; máx 3 slots), 7 staff passivos (máx 3 slots) — inclui Chef do Bacon
 - Detalhe visual importante: queijo usa sprite "frio" por defeito e troca para "derretendo" quando colocado sobre proteína
 - **Tutorial guiado** (obrigatório manter): primeiro burger passo a passo com destaque e bloqueio de ações — paredes de texto NÃO funcionam (validado com o autor)
-- **📖 Livro**: painel com todas as adjacências, receitas e staff (tens/não tens)
+- **📖 Coleção** (estilo Balatro, jul 2026 — era o "Livro"): galeria visual com todas as receitas e staff como cartas nas molduras (✓ no que tens na run), bosses como cartões, adjacências e ingredientes com a arte `card_art_*`; toque abre detalhe
 - **Troca seletiva**: modo de seleção, descarta só os ingredientes marcados
 - Áudio: bleeps WebAudio (pitch sobe com a altura da pilha, cash ao servir, buzz ao tombar)
 

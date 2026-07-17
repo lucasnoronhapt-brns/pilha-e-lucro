@@ -65,7 +65,11 @@
       "Bash(node \"C:/Users/lucas/AppData/Local/Temp/claude/c--Users-lucas-pilha-e-lucro-v0-2-html/315b43c0-1ee7-4a8e-b6fa-a363b413b143/scratchpad/e2e_vender.js\")",
       "Bash(py -m pip install --quiet \"qrcode[pil]\")",
       "Bash(py -c ' *)",
-      "PowerShell(Start-Sleep 2; $edge = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; if \\(-not \\(Test-Path $edge\\)\\) { $edge = \"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $out = \"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-pilha-e-lucro-v0-2-html\\\\315b43c0-1ee7-4a8e-b6fa-a363b413b143\\\\scratchpad\"; & $edge --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=8000 --window-size=1920,1080 --screenshot=\"$out\\\\ranking_tv.png\" \"http://localhost:8000/ranking/\" | Out-Null; Write-Host ok)"
+      "PowerShell(Start-Sleep 2; $edge = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; if \\(-not \\(Test-Path $edge\\)\\) { $edge = \"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $out = \"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-pilha-e-lucro-v0-2-html\\\\315b43c0-1ee7-4a8e-b6fa-a363b413b143\\\\scratchpad\"; & $edge --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=8000 --window-size=1920,1080 --screenshot=\"$out\\\\ranking_tv.png\" \"http://localhost:8000/ranking/\" | Out-Null; Write-Host ok)",
+      "Bash(\"C:/Program Files/GitHub CLI/gh.exe\" api repos/lucasnoronhapt-brns/pilha-e-lucro/pages/builds/latest)",
+      "Bash(curl -s -o /dev/null -w \"ranking: %{http_code}\\\\n\" https://lucasnoronhapt-brns.github.io/pilha-e-lucro/ranking/)",
+      "Bash(curl -s -o /dev/null -w \"jogo: %{http_code}\\\\n\" https://lucasnoronhapt-brns.github.io/pilha-e-lucro/client/)",
+      "PowerShell($edge = \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\"; if \\(-not \\(Test-Path $edge\\)\\) { $edge = \"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe\" }; $out = \"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-pilha-e-lucro-v0-2-html\\\\315b43c0-1ee7-4a8e-b6fa-a363b413b143\\\\scratchpad\"; & $edge --headless=new --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=780,1688 --screenshot=\"$out\\\\colecao.png\" \"http://localhost:8000/client/?demo=livro\" | Out-Null; Write-Host ok)"
     ]
   }
 }

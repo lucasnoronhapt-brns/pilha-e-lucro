@@ -555,23 +555,64 @@ function tutAdvanceAfterPlace(k){
   else if(TUT.step===2 && k==='queijo') tutStep(3);
 }
 
-/* ============ LIVRO ============ */
+/* ============ COLEÇÃO (livro visual estilo Balatro) ============ */
+function cartaColecao(frame, icon, nome, own, detalhe){
+  const c = document.createElement('div');
+  c.className = 'ccard';
+  c.style.backgroundImage = `url(${frame})`;
+  c.innerHTML = `${own?'<span class="cown">✓</span>':''}<img class="cart" src="${arteCarta(icon)}"><div class="cnome">${nome}</div>`;
+  c.onclick = detalhe;
+  return c;
+}
 function abrirLivro(){
-  let h = '<div class="lsec">🔥 Adjacências (sempre ativas)</div>';
-  ADJ.forEach(a=>{
-    h += `<div class="lrow"><span>${a.e} <b>${a.n}</b> — ${a.d}</span><span class="lb ${a.m?'m':''}">${a.b}</span></div>`;
-  });
-  h += '<div class="lsec">📖 Receitas (compram-se na loja · máx 3)</div>';
+  const body = $('livrobody'); body.innerHTML='';
+  const sec = t => { const d=document.createElement('div'); d.className='lsec'; d.textContent=t; body.appendChild(d); };
+  const grid = () => { const g=document.createElement('div'); g.className='colgrid'; body.appendChild(g); return g; };
+
+  sec('📖 Receitas · compram-se na loja · máx 3');
+  let g = grid();
   RECEITAS.forEach(r=>{
     const own = G.receitas.some(x=>x.id===r.id);
-    h += `<div class="lrow ${own?'':'off'}"><span><b>${r.n}</b> — ${r.d}</span><span class="${own?'own':'lb'}">${own?'✓ TENS':r.preco+'€'}</span></div>`;
+    g.appendChild(cartaColecao(SPR.card_receita, r.icon, r.n, own,
+      ()=>abrirInfo('📖', {n:r.n, d:`${r.d} · ${r.preco>0?r.preco+'€ na loja':'receita inicial'}`})));
   });
-  h += '<div class="lsec">👤 Staff (contrata na loja · máx 3)</div>';
+
+  sec('👤 Staff · contrata na loja · máx 3');
+  g = grid();
   STAFF.forEach(s=>{
     const own = G.staff.some(x=>x.id===s.id);
-    h += `<div class="lrow ${own?'':'off'}"><span><b>${s.n}</b> — ${s.d}</span><span class="${own?'own':'lb'}">${own?'✓ TENS':s.preco+'€'}</span></div>`;
+    g.appendChild(cartaColecao(SPR.card_staff, s.icon, s.n, own,
+      ()=>abrirInfo('👤', {n:s.n, d:`${s.d} · ${s.preco}€ na loja`})));
   });
-  $('livrobody').innerHTML = h;
+
+  sec('🥦 Bosses · a cada 3 rondas, por esta ordem');
+  BOSSES.forEach(b=>{
+    const [cab, regra] = b.n.split(':');
+    const esp = cab.indexOf(' ');
+    const d = document.createElement('div');
+    d.className = 'cboss';
+    d.innerHTML = `<span class="bico">${cab.slice(0,esp)}</span><span><span class="btit">${cab.slice(esp+1)}</span><br><span class="breg">${regra.trim()}</span></span>`;
+    body.appendChild(d);
+  });
+
+  sec('🔥 Adjacências · sempre ativas');
+  ADJ.forEach(a=>{
+    const d = document.createElement('div');
+    d.className = 'lrow';
+    d.innerHTML = `<span>${a.e} <b>${a.n}</b> — ${a.d}</span><span class="lb ${a.m?'m':''}">${a.b}</span>`;
+    body.appendChild(d);
+  });
+
+  sec('🍔 Ingredientes · fichas e peso');
+  g = grid();
+  for(const k in ING){
+    const o = ING[k];
+    const d = document.createElement('div');
+    d.className = 'cing';
+    d.innerHTML = `<img src="${arteCarta(o.spr||k)}"><div class="nm">${o.n}</div><div class="inf">+${o.chips} <span class="peso">⚖${o.peso}</span></div>`;
+    g.appendChild(d);
+  }
+
   $('livro').classList.add('show');
 }
 
@@ -596,4 +637,5 @@ if(QS.has('demo')){
   renderHand(); renderStack(); renderHUD();
   if(QS.get('demo')==='loja'){ G.pts = 200; resolverFim(Engine.servir(G).fim); }
   if(QS.get('demo')==='troca'){ swapMode=true; swapSel.add(0); swapSel.add(2); renderHand(); updateTrocarBtn(); }
+  if(QS.get('demo')==='livro'){ abrirLivro(); }
 }

@@ -80,9 +80,9 @@ button{font-family:inherit;cursor:pointer;border:none}
 }
 #bosscard.show{display:flex;animation:bossin .5s cubic-bezier(.2,1.3,.4,1)}
 @keyframes bossin{from{transform:translateY(-30px) scale(.85);opacity:0}to{transform:none;opacity:1}}
-#bosscard .bico{font-size:30px;line-height:1}
-#bosscard .btit{font-size:13px;font-weight:800;letter-spacing:.5px}
-#bosscard .breg{font-size:12px;opacity:.92}
+#bosscard .bico,.cboss .bico{font-size:30px;line-height:1}
+#bosscard .btit,.cboss .btit{font-size:13px;font-weight:800;letter-spacing:.5px}
+#bosscard .breg,.cboss .breg{font-size:12px;opacity:.92}
 /* adjacências ativas — lista ao lado da pilha (M1.5 ponto 3) */
 #adjlist{
   position:absolute;left:8px;bottom:18%;z-index:3;max-width:46%;
@@ -278,6 +278,30 @@ button{font-family:inherit;cursor:pointer;border:none}
 }
 .btn.trocar.mode{background:linear-gradient(180deg,#8fd95c,var(--ok));color:var(--tinta)}
 #livro .panel{background:#3b2a1a}
+/* coleção visual (estilo Balatro) dentro do livro */
+.colgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+.ccard{position:relative;aspect-ratio:210/294;background-size:100% 100%;background-repeat:no-repeat;cursor:pointer;transition:transform .08s}
+.ccard:active{transform:scale(.95)}
+.ccard .cart{position:absolute;top:13%;left:50%;transform:translateX(-50%);width:76%;height:44%;object-fit:contain;image-rendering:pixelated}
+.ccard .cnome{
+  position:absolute;top:66%;bottom:6%;left:11%;right:11%;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:11px;font-weight:800;color:var(--tinta);line-height:1.2;
+}
+.ccard .cown{
+  position:absolute;top:-7px;right:-5px;background:var(--ok);color:var(--tinta);
+  font-weight:800;font-size:11px;border:2px solid var(--tinta);border-radius:7px;
+  padding:1px 5px;box-shadow:0 2px 0 var(--tinta);z-index:2;
+}
+.cboss{
+  display:flex;align-items:center;gap:10px;background:#4a1210;border:3px solid var(--tinta);
+  border-radius:10px;padding:8px 12px;margin-bottom:6px;color:#fff;
+}
+.cing{background:#231409;border:2px solid #5a3d22;border-radius:9px;padding:6px 4px;text-align:center}
+.cing img{width:56px;height:42px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto 2px}
+.cing .nm{font-size:11px;font-weight:800;text-transform:uppercase}
+.cing .inf{font-size:11px;color:#6fb8e8}
+.cing .inf .peso{color:var(--mostarda)}
 .lsec{font-size:11px;font-weight:800;letter-spacing:1px;margin:12px 0 6px;color:var(--mostarda);text-transform:uppercase}
 .lrow{
   display:flex;justify-content:space-between;gap:8px;font-size:11px;line-height:1.4;
@@ -422,8 +446,8 @@ button{font-family:inherit;cursor:pointer;border:none}
 
 <div class="overlay" id="livro">
   <div class="panel">
-    <h2>📖 Livro do Balcão</h2>
-    <div class="sub">Tudo o que pontua — planeia a tua build.</div>
+    <h2>📖 Coleção do Balcão</h2>
+    <div class="sub">Tudo o que existe no jogo — planeia a tua build.</div>
     <div id="livrobody"></div>
     <button class="go" onclick="document.getElementById('livro').classList.remove('show')">FECHAR</button>
   </div>
