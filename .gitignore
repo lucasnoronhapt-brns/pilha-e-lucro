@@ -1,6 +1,9 @@
 # dados locais de dev (leaderboard de teste)
 server/local/db.json
 
+# arte em bruto do ChatGPT (12 MB; os processados vivem em assets/sprites/)
+assets/brutos/
+
 # gerado por npm run sync:supabase a partir de engine/ e shared/
 server/supabase/functions/_shared/
 
