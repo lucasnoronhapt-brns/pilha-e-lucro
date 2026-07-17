@@ -380,6 +380,19 @@ function mostrarLoja(){
   });
   refreshAfford();
   $('shop').classList.add('show');
+  /* a fonte monospace varia entre sistemas (Android é mais larga):
+     se o texto não couber na placa da carta, encolhe até caber */
+  requestAnimationFrame(()=>{
+    off.querySelectorAll('.stxt').forEach(t=>{
+      const nome = t.querySelector('.sname'), desc = t.querySelector('.sdesc');
+      let s = 12;
+      while(t.scrollHeight > t.clientHeight && s > 9){
+        s--;
+        desc.style.fontSize = s+'px';
+        if(s<=10) nome.style.fontSize = '12px';
+      }
+    });
+  });
 }
 function proximaRonda(){
   const r = Engine.proximaRonda(G);

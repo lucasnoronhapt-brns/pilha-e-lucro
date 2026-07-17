@@ -118,7 +118,10 @@ button{font-family:inherit;cursor:pointer;border:none}
   position:relative;flex:0 0 auto;cursor:pointer;transition:transform .08s;
 }
 .mcard:active{transform:scale(.92)}
-.mcard img{position:absolute;top:24%;left:50%;transform:translateX(-50%);width:62%;image-rendering:pixelated}
+.mcard img{
+  position:absolute;top:12%;left:50%;transform:translateX(-50%);
+  width:74%;height:44%;object-fit:contain;image-rendering:pixelated;
+}
 .mcard.vazia{border:2px dashed rgba(245,233,208,.4);border-radius:6px;cursor:default}
 .mcard.vazia::after{
   content:attr(data-e);position:absolute;inset:0;display:flex;
