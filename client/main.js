@@ -25,8 +25,9 @@ SPR.fundo = '../assets/sprites/fundo_v2.png'; // M1.5: cozinha sem menu — o al
    assets/sprites/card_art_<icon>.png, acrescenta o icon a este Set e a carta
    usa-a; senão cai para o sprite normal do ingrediente. */
 const CARD_ART = new Set([
-  'alface','bacon','carne','frango','maionese','molho_especial',
-  'ovo','pao_base','queijo_derretendo','queijo_frio','tomate',
+  'alface','bacon','carne','cebola','frango','ketchup','maionese',
+  'molho_especial','ovo','pao_base','picles','queijo_derretendo',
+  'queijo_frio','tomate',
 ]);
 const arteCarta = icon => CARD_ART.has(icon) ? `../assets/sprites/card_art_${icon}.png` : SPR[icon];
 

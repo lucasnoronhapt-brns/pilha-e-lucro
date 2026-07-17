@@ -13,6 +13,9 @@ MARGEM = 0.03  # 3% de respiro à volta do conteúdo
 MAPA = {
     'alface.png': 'alface',
     'bacon.png': 'bacon',
+    'catchup.png': 'ketchup',
+    'cebola.png': 'cebola',
+    'picles.png': 'picles',
     'maionese.png': 'maionese',
     'molho especial.png': 'molho_especial',
     'ovo.png': 'ovo',
