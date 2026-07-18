@@ -46,7 +46,7 @@ main{
    da linha (só divide com a posição), em vez de competir na mesma linha com
    pontos e ronda */
 .rrow .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:.15em}
-.rrow .rnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rrow .rnm{white-space:normal;overflow-wrap:anywhere} /* nunca corta o nome — quebra linha se precisar */
 .rrow .meta{display:flex;gap:1.2em;font-size:.55em;opacity:.9}
 .rrow .rpts{font-weight:800;color:var(--azul);white-space:nowrap}
 .rrow .rrnd{opacity:.8;white-space:nowrap}
