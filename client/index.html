@@ -289,6 +289,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 /* coleção visual (estilo Balatro) dentro do livro */
 .colgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
 .ccard{position:relative;aspect-ratio:210/294;background-size:100% 100%;background-repeat:no-repeat;cursor:pointer;transition:transform .08s}
+.ccard.equip,.scard.equip{aspect-ratio:210/254} /* card_equip.png é 210x254, não 210x294 como as outras molduras — evita esticar */
 .ccard:active{transform:scale(.95)}
 .ccard .cart{position:absolute;top:13%;left:50%;transform:translateX(-50%);width:76%;height:44%;object-fit:contain;image-rendering:pixelated}
 .ccard .cnome{

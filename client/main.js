@@ -423,7 +423,7 @@ function mostrarLoja(){
   L.ofertas.forEach(({o,t}, i)=>{
     const preco = Engine.precoOferta(G, o.preco);
     const div = document.createElement('div');
-    div.className = 'scard';
+    div.className = t==='e' ? 'scard equip' : 'scard';
     div.dataset.preco = preco;
     div.style.backgroundImage = `url(${FRAME[t]})`;
     div.innerHTML = `
@@ -583,9 +583,9 @@ function tutAdvanceAfterPlace(k){
 }
 
 /* ============ COLEÇÃO (livro visual estilo Balatro) ============ */
-function cartaColecao(frame, icon, nome, own, detalhe){
+function cartaColecao(frame, icon, nome, own, detalhe, extraClass){
   const c = document.createElement('div');
-  c.className = 'ccard';
+  c.className = extraClass ? `ccard ${extraClass}` : 'ccard';
   c.style.backgroundImage = `url(${frame})`;
   c.innerHTML = `${own?'<span class="cown">✓</span>':''}<img class="cart" src="${arteCarta(icon)}"><div class="cnome">${nome}</div>`;
   c.onclick = detalhe;
@@ -617,7 +617,7 @@ function abrirLivro(){
   EQUIPAMENTOS.forEach(e=>{
     const own = G.equip.some(x=>x.id===e.id);
     g.appendChild(cartaColecao(SPR.card_equip, e.icon, e.n, own,
-      ()=>abrirInfo('🔧', {n:e.n, d:`${e.d} · ${e.preco}€ na loja`})));
+      ()=>abrirInfo('🔧', {n:e.n, d:`${e.d} · ${e.preco}€ na loja`}), 'equip'));
   });
 
   sec('🥦 Bosses · a cada 3 rondas, por esta ordem');
