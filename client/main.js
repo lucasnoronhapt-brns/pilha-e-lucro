@@ -17,7 +17,8 @@ const SPRITE_KEYS = [
   'cebola','frango','ketchup','maionese','molho_especial','ovo',
   'pao_base','pao_base_brioche','pao_base_pretzel',
   'pao_topo','pao_topo_brioche','pao_topo_pretzel',
-  'picles','queijo','queijo_derretendo','queijo_derretido','queijo_frio','tomate',
+  'picles','queijo','queijo_derretendo','queijo_derretido','queijo_frio',
+  'tomate','tomate_murcho','tomate_estragado',
 ];
 const SPR = Object.fromEntries(SPRITE_KEYS.map(k=>[k, `../assets/sprites/${k}.png`]));
 SPR.fundo = '../assets/sprites/fundo_v2.png'; // M1.5: cozinha sem menu — o alvo vive no quadro chalkboard
@@ -146,7 +147,10 @@ function renderStab(){
 
 /* sprites por estado de frescura (só a alface tem arte dedicada por agora;
    os restantes usam filtro CSS até chegarem os sprites do acervo) */
-const SPR_ESTADO = { alface: {murcho:'alface_murcha', estragado:'alface_estragada'} };
+const SPR_ESTADO = {
+  alface: {murcho:'alface_murcha', estragado:'alface_estragada'},
+  tomate: {murcho:'tomate_murcho', estragado:'tomate_estragado'},
+};
 function sprCarta(k, estado){
   const esp = SPR_ESTADO[k] && SPR_ESTADO[k][estado];
   return SPR[esp || ING[k].spr || k];
