@@ -1,3 +1,8 @@
+# credenciais — NUNCA commitar (este repositório é público)
+*.local.md
+.env
+.env.*
+
 # dados locais de dev (leaderboard de teste)
 server/local/db.json
 

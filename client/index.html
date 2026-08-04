@@ -249,6 +249,13 @@ button{font-family:inherit;cursor:pointer;border:none}
 #subinfo{font-size:11px;margin-top:6px;min-height:14px}
 #subinfo.err{color:#ff8f83}
 #subinfo.okk{color:var(--ok)}
+/* login: o ecrã de fim mostra só o passo em que o jogador está —
+   escondidos por defeito para não piscarem antes do JS decidir */
+#blogin,#nomebox,#bsubmeter{display:none}
+.subnota{font-size:11px;opacity:.85;margin-top:4px;line-height:1.5}
+#quemsou{font-size:11px;opacity:.85;margin-top:8px}
+#quemsou b{color:var(--mostarda)}
+#quemsou u{cursor:pointer;color:#ff8f83}
 .rrow{
   display:flex;gap:8px;font-size:12px;line-height:1.5;align-items:center;
   background:rgba(0,0,0,.25);border-radius:6px;padding:6px 9px;margin-bottom:4px;
@@ -425,10 +432,16 @@ button{font-family:inherit;cursor:pointer;border:none}
     <h2>💀 Balcão fechado</h2>
     <div id="deadstats"></div>
     <div id="submitbox">
-      <input id="innome" placeholder="ex: Rita S. ou uma alcunha" maxlength="20" autocomplete="nickname">
-      <div style="font-size:11px;opacity:.8;margin-top:4px">este nome fica visível para todos os jogadores</div>
+      <button class="go" id="blogin">🔑 ENTRAR COM GOOGLE</button>
+      <div class="subnota" id="loginnota">Entra para guardares a pontuação no ranking.<br>Só usamos o teu email para saber que és tu — nunca fica visível.</div>
+      <div id="nomebox">
+        <input id="innome" placeholder="ex: Rita S. ou uma alcunha" maxlength="20" autocomplete="nickname">
+        <div class="subnota">Escolhe como queres aparecer no ranking — fica visível para todos.</div>
+        <button class="go" id="bguardarnome">GUARDAR NOME</button>
+      </div>
       <button class="go" id="bsubmeter">🏆 SUBMETER PONTUAÇÃO</button>
       <div id="subinfo"></div>
+      <div id="quemsou"></div>
     </div>
     <div id="rankdead"></div>
     <button class="go" style="background:#5c666e;color:var(--creme)" onclick="location.reload()">TENTAR OUTRA RUN</button>

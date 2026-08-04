@@ -7,6 +7,7 @@ import * as Engine from '../engine/game.js';
 import { ING, RECEITAS, STAFF, EQUIPAMENTOS, ADJ, BOSSES } from '../engine/data.js';
 import { normalizarNome, nomeValido } from '../shared/nome.js';
 import { ENDPOINTS } from './config.js';
+import * as Auth from './auth.js';
 
 /* ============ SPRITES (extraídos do v0.2 para assets/sprites/) ============ */
 const SPRITE_KEYS = [
@@ -36,6 +37,11 @@ const arteCarta = icon => CARD_ART.has(icon) ? `../assets/sprites/card_art_${ico
    Sem servidor (ex.: abrir só os estáticos), a run funciona offline com seed
    local, mas não pode ser submetida ao ranking. */
 const QS = new URLSearchParams(location.search); // truques de dev: ?semintro, ?demo
+
+/* Voltámos do login com Google? Apanha o token do fragmento (#) e limpa-o do
+   endereço — tem de acontecer antes de qualquer pedido ao servidor. */
+Auth.capturarRedirect();
+
 let RUN = null;
 if(!QS.has('demo')) try{
   const r = await fetch(ENDPOINTS.start, {method:'POST'});
@@ -469,10 +475,19 @@ function proximaRonda(){
   renderHand(); renderStack(); renderHUD(); renderCrew();
   if(G.boss) toast(G.boss.n);
 }
+/* Run a submeter. Vive fora do G porque tem de sobreviver ao redirect do
+   login com Google, que descarrega a página (ver Auth.guardarRunPendente). */
+let SUBMISSAO = null;
+
+const statsHTML = s =>
+  `Aguentaste <b>${s.ronda}</b> ronda(s).<br>Serviste <b>${s.burgers}</b> burgers.<br>Melhor burger: <b>${s.melhor} pts</b>.<br>Pontuação total: <b>${s.pts} pts</b>.`;
+
 function gameOver(){
-  $('deadstats').innerHTML = `Aguentaste <b>${G.ronda}</b> ronda(s).<br>Serviste <b>${G.totalBurgers}</b> burgers.<br>Melhor burger: <b>${G.melhorBurger} pts</b>.<br>Pontuação total: <b>${G.ptsTotais} pts</b>.`;
-  $('submitbox').style.display = RUN ? 'block' : 'none';
+  const stats = {ronda:G.ronda, burgers:G.totalBurgers, melhor:G.melhorBurger, pts:G.ptsTotais};
+  SUBMISSAO = RUN ? {run_id:RUN.run_id, log:G.log, stats} : null;
+  $('deadstats').innerHTML = statsHTML(stats);
   $('gameover').classList.add('show');
+  prepararSubmissao();
 }
 
 /* ============ RANKING ============ */
@@ -493,26 +508,109 @@ async function abrirRanking(){
     body.innerHTML = '<div class="rrow"><span class="rnm">Sem ligação ao servidor.</span></div>';
   }
 }
-async function submeter(){
+/* ---------- submissão com sessão ----------
+   O ecrã de fim mostra só o passo em que o jogador está:
+   entrar com Google → escolher nome de exibição → submeter. */
+
+/* nome do perfil: string = já escolhido · null = falta escolher ·
+   undefined = não deu para saber (sem rede ou sessão inválida) */
+async function nomeDoPerfil(){
+  try{
+    const r = await fetch(ENDPOINTS.perfil, {headers: Auth.cabecalho()});
+    if(r.status === 401){ Auth.sair(); return undefined; }
+    if(!r.ok) return undefined;
+    return (await r.json()).nome ?? null;
+  }catch(e){ return undefined; }
+}
+
+/* sugere só o PRIMEIRO nome da conta Google — nunca o nome completo */
+async function sugerirNome(){
+  const u = await Auth.utilizador();
+  const completo = u?.user_metadata?.name || u?.user_metadata?.full_name || '';
+  return completo.trim().split(/\s+/)[0] || '';
+}
+
+async function prepararSubmissao(){
+  const ver = (id,v)=>{ $(id).style.display = v ? 'block' : 'none'; };
+  const info = $('subinfo');
+  info.className=''; info.textContent=''; $('quemsou').innerHTML='';
+
+  if(!SUBMISSAO || !Auth.disponivel()){ $('submitbox').style.display='none'; return; }
+  $('submitbox').style.display='block';
+
+  if(!Auth.sessao()){
+    ver('blogin',true); ver('loginnota',true); ver('nomebox',false); ver('bsubmeter',false);
+    return;
+  }
+  ver('blogin',false); ver('loginnota',false);
+
+  const nome = await nomeDoPerfil();
+  if(nome === undefined){
+    ver('nomebox',false); ver('bsubmeter',false);
+    info.className='err'; info.textContent='Sem ligação ao servidor. Recarrega a página.';
+    return;
+  }
+  if(nome === null){
+    ver('nomebox',true); ver('bsubmeter',false);
+    if(!$('innome').value) $('innome').value = await sugerirNome();
+    return;
+  }
+  ver('nomebox',false); ver('bsubmeter',true);
+  $('quemsou').innerHTML = `A submeter como <b>${esc(nome)}</b> · <u id="bsair">sair</u>`;
+  $('bsair').onclick = ()=>{ Auth.sair(); prepararSubmissao(); };
+}
+
+/* entrar obriga a sair da página: guarda a run para não se perder no caminho */
+function entrarParaSubmeter(){
+  if(SUBMISSAO) Auth.guardarRunPendente(SUBMISSAO);
+  Auth.entrarComGoogle();
+}
+
+async function guardarNome(){
   const info = $('subinfo');
   const nome = normalizarNome($('innome').value);
   if(!nomeValido(nome)){
-    info.className='err'; info.textContent='Nome: 3–20 caracteres, sem palavrões.';
+    info.className='err';
+    info.textContent='Nome: 3–20 caracteres, sem palavrões e sem frases sobre outras pessoas.';
     return;
   }
+  $('bguardarnome').disabled = true;
+  info.className=''; info.textContent='A guardar…';
+  try{
+    const r = await fetch(ENDPOINTS.perfil, {
+      method:'POST',
+      headers:{'Content-Type':'application/json', ...Auth.cabecalho()},
+      body: JSON.stringify({nome}),
+    });
+    const res = await r.json();
+    $('bguardarnome').disabled = false;
+    if(!r.ok){ info.className='err'; info.textContent = res.erro || 'Erro ao guardar.'; return; }
+    prepararSubmissao();
+  }catch(e){
+    $('bguardarnome').disabled = false;
+    info.className='err'; info.textContent='Sem ligação ao servidor.';
+  }
+}
+
+async function submeter(){
+  if(!SUBMISSAO) return;
+  const info = $('subinfo');
   $('bsubmeter').disabled = true;
   info.className=''; info.textContent='A validar no servidor…';
   try{
     const r = await fetch(ENDPOINTS.submit, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({run_id: RUN.run_id, nome, log: G.log}),
+      method:'POST',
+      headers:{'Content-Type':'application/json', ...Auth.cabecalho()},
+      body: JSON.stringify({run_id: SUBMISSAO.run_id, log: SUBMISSAO.log}),
     });
     const res = await r.json();
     if(!r.ok){
       info.className='err'; info.textContent = res.erro || 'Erro ao submeter.';
       $('bsubmeter').disabled = false;
+      if(r.status === 401){ Auth.sair(); prepararSubmissao(); }
       return;
     }
+    Auth.limparRunPendente();
     info.className='okk';
     info.textContent = res.posicao ? `✓ Validado: ${res.pts} pts — posição #${res.posicao}!` : `✓ Validado: ${res.pts} pts.`;
     beep(700,.06);beep(950,.08);
@@ -658,6 +756,8 @@ $('bcontinuar').onclick = proximaRonda;
 $('blivro').onclick = abrirLivro;
 $('branking').onclick = abrirRanking;
 $('bsubmeter').onclick = submeter;
+$('blogin').onclick = entrarParaSubmeter;
+$('bguardarnome').onclick = guardarNome;
 $('btutorial').onclick = iniciarTutorial;
 $('bjasei').onclick = fecharIntro;
 
@@ -678,4 +778,19 @@ if(QS.has('demo')){
   if(QS.get('demo')==='loja'){ G.pts = 200; resolverFim(Engine.servir(G).fim); }
   if(QS.get('demo')==='troca'){ swapMode=true; swapSel.add(0); swapSel.add(2); renderHand(); updateTrocarBtn(); }
   if(QS.get('demo')==='livro'){ abrirLivro(); }
+}
+
+/* Voltar do login: se ficou uma run à espera de submissão, retoma o ecrã de
+   fim com ela em vez de a deitar fora (a run nova desta página fica de lado). */
+const PENDENTE = Auth.lerRunPendente();
+if(PENDENTE && PENDENTE.run_id){
+  if(Auth.sessao()){
+    SUBMISSAO = PENDENTE;
+    $('intro').classList.remove('show');
+    $('deadstats').innerHTML = statsHTML(PENDENTE.stats);
+    $('gameover').classList.add('show');
+    prepararSubmissao();
+  } else {
+    Auth.limparRunPendente();   // login cancelado ou falhado
+  }
 }

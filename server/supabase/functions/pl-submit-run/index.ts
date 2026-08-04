@@ -1,12 +1,13 @@
-/* pl-submit-run — recebe {run_id, nome, log}, RE-SIMULA a run com o mesmo
-   engine do cliente e calcula a pontuação no servidor. Divergência, ação
-   ilegal, run repetida ou seed expirada = rejeitada.
+/* pl-submit-run — recebe {run_id, log}, RE-SIMULA a run com o mesmo engine do
+   cliente e calcula a pontuação no servidor. Divergência, ação ilegal, run
+   repetida ou seed expirada = rejeitada.
+   Exige sessão iniciada: o nome NÃO vem do cliente, vem do perfil (pl_perfis),
+   onde já passou pelo filtro do shared/nome.js.
    Antes do deploy: npm run sync:supabase (gera _shared/ a partir da raiz).
    Deploy: supabase functions deploy pl-submit-run --no-verify-jwt */
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { replay } from '../_shared/engine/replay.js';
-import { normalizarNome, nomeValido } from '../_shared/shared/nome.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -23,18 +24,28 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json(405, { erro: 'método' });
 
-  let body: { run_id?: string; nome?: string; log?: unknown };
+  let body: { run_id?: string; log?: unknown };
   try { body = await req.json(); } catch { return json(400, { erro: 'JSON inválido' }); }
   const { run_id, log } = body;
-  const nome = normalizarNome(body.nome);
 
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+  /* Quem submete e com que nome vem SEMPRE do token + perfil, nunca do corpo
+     do pedido — é isto que impede escrever um nome à mão a cada submissão. */
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+  if (!token) return json(401, { erro: 'inicia sessão para entrares no ranking' });
+  const { data: auth } = await db.auth.getUser(token);
+  const user = auth?.user;
+  if (!user) return json(401, { erro: 'sessão expirada — entra outra vez' });
+
+  const { data: perfil } = await db.from('pl_perfis').select('nome').eq('id', user.id).maybeSingle();
+  if (!perfil) return json(409, { erro: 'escolhe primeiro o teu nome de jogador' });
+  const nome = perfil.nome;
 
   const { data: run } = await db.from('pl_runs').select('*').eq('id', run_id).maybeSingle();
   if (!run) return json(404, { erro: 'run desconhecida' });
   if (run.usada) return json(409, { erro: 'run já submetida' });
   if (Date.now() - new Date(run.criada).getTime() > VALIDADE_SEED_MS) return json(410, { erro: 'seed expirada' });
-  if (!nomeValido(nome)) return json(400, { erro: 'nome inválido (3-20 caracteres, sem palavrões)' });
   if (!Array.isArray(log) || log.length === 0 || log.length > MAX_ACOES) return json(400, { erro: 'action_log inválido' });
 
   /* A pontuação NUNCA vem do cliente. */
@@ -48,7 +59,7 @@ Deno.serve(async (req) => {
   if (!marcada || marcada.length === 0) return json(409, { erro: 'run já submetida' });
 
   const entrada = {
-    nome, pts: rep.ptsTotais, ronda: rep.ronda,
+    nome, user_id: user.id, pts: rep.ptsTotais, ronda: rep.ronda,
     burgers: rep.totalBurgers, melhor: rep.melhorBurger, run_id,
   };
   const { error: e2 } = await db.from('pl_scores').insert(entrada);
