@@ -13,6 +13,7 @@ BRUTOS = AQUI / 'brutos'
 SPRITES = AQUI / 'sprites'
 TAM = 128
 MARGEM = 0.03  # 3% de respiro à volta do conteúdo
+LARGURA_PILHA = 170  # camadas do hambúrguer: todas com a mesma largura
 
 MAPA = {
     'alface.png': 'alface',
@@ -188,3 +189,29 @@ for caminho in sorted(BRUTOS.glob('card_art_*.png')):
         partes.append(f'franja {fr_apag} apagados / {fr_recol} recoloridos')
     extra = '  [' + ', '.join(partes) + ']' if partes else ''
     print(f'{caminho.name}: {orig[0]}x{orig[1]} → {novo[0]}x{novo[1]}{extra}')
+
+# --- 3ª passagem: camadas da pilha (o hambúrguer visto de lado) ---
+# Nomear em brutos/ como pilha_<nome>.png; sai em sprites/<nome>.png.
+# Estas NÃO são como as cartas: são bandas todas com a mesma largura
+# (LARGURA_PILHA), para as camadas encaixarem umas nas outras na pilha.
+# A altura é livre — é ela que dá a espessura de cada ingrediente.
+print()
+for caminho in sorted(BRUTOS.glob('pilha_*.png')):
+    nome = caminho.stem[len('pilha_'):]
+    im = chroma_key(Image.open(caminho))
+    im, _ = limpa_sujidade(im)
+    bbox = im.getbbox()
+    if not bbox:
+        print(f'AVISO: {caminho.name} ficou vazia depois do chroma-key — ignorada')
+        continue
+    orig = im.size
+    im = im.crop(bbox)
+    escala = LARGURA_PILHA / im.width
+    alvo = (LARGURA_PILHA, max(1, round(im.height * escala)))
+    final = im.resize(alvo, Image.NEAREST)
+    final, sujos = limpa_sujidade(final)
+    final, fr_apag, fr_recol = limpa_franja(final)
+    destino = SPRITES / f'{nome}.png'
+    extra = f'  [franja {fr_apag}/{fr_recol}]' if (fr_apag or fr_recol) else ''
+    final.save(destino)
+    print(f'{caminho.name} → {destino.name}: {orig[0]}x{orig[1]} → {alvo[0]}x{alvo[1]}{extra}')
