@@ -64,7 +64,12 @@ define — a carta tem moldura de crachá, por isso funcionam como fotos de pess
 | `balcao` | Balcão Reforçado | Trabalhador robusto de meio corpo, braços cruzados, encostado a um balcão de aço reforçado com rebites. |
 | `maos` | Mãos Rápidas | Cozinheiro de meio corpo com as mãos desfocadas em movimento, várias linhas de velocidade, expressão concentrada. |
 | `msecreto` | Molho Secreto | Cozinheiro de meio corpo a piscar o olho, a segurar um frasco escuro sem rótulo com um líquido a brilhar lá dentro. |
-| `turno` | Duplo Turno | Cozinheiro de meio corpo com olheiras e um sorriso cansado, a segurar uma caneca de café a fumegar, dois relógios ao fundo. |
+| `turno` | Duplo Turno | Cozinheiro de meio corpo com olheiras e um sorriso cansado, a segurar uma caneca de café a fumegar numa mão e um despertador na outra. **Sem cenário nem parede — só a figura.** |
+
+> ⚠️ A primeira versão desta carta dizia "dois relógios **ao fundo**", e o ChatGPT
+> desenhou uma cena com parede em vez de fundo magenta — o chroma-key não teve
+> nada para remover. **Nunca peças elementos "ao fundo"**: tudo o que a carta
+> mostra tem de fazer parte da figura, senão vem com cenário colado.
 
 ---
 

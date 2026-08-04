@@ -38,9 +38,11 @@ const arteCarta = icon => CARD_ART.has(icon) ? `../assets/sprites/card_art_${ico
    Para ativar uma: põe assets/sprites/card_art_<tipo>_<id>.png e acrescenta o
    id ao Set do seu tipo. Sem isso, cai no sprite do ingrediente como antes. */
 const ARTE_PROPRIA = {
-  r: new Set([]),   // cheese, classico, salada, bacon2, molho3, pequeno
-  s: new Set([]),   // chefbacon, horta, estufa, balcao, maos, msecreto, turno
-  e: new Set([]),   // freezer, estante, fornecedor
+  r: new Set(['cheese','classico','salada','bacon2','molho3','pequeno']),
+  s: new Set(['chefbacon','horta','estufa','balcao','maos','msecreto']),
+  e: new Set(['freezer','estante','fornecedor']),
+  /* falta 'turno': o bruto veio com fundo de cena em vez de magenta, por isso o
+     chroma-key não o apanhou — usa o sprite do ovo até ser refeito */
 };
 const arteDaCarta = (tipo, o) => ARTE_PROPRIA[tipo] && ARTE_PROPRIA[tipo].has(o.id)
   ? `../assets/sprites/card_art_${tipo}_${o.id}.png`
