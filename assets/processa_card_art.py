@@ -76,6 +76,56 @@ def limpa_sujidade(im):
     return im, apagados
 
 
+def limpa_franja(im):
+    """Corrige pixels de magenta que ficam colados ao contorno.
+
+    O chroma_key só apanha magenta forte; nas bordas sobram tons rosados que
+    lhe escapam (ex.: verde 134 contra o limite de 130). Como estão ligados ao
+    desenho, a limpeza de blocos soltos também não os vê.
+
+    Um rosado com vizinhos rosados é DESENHO (a cebola roxa da Salada), por isso
+    só se mexe nos isolados. E não se apaga à toa: apagar no meio do desenho
+    abriria furos, portanto só desaparece o que está espetado no vazio (5+
+    vizinhos transparentes); o resto é recolorido com a média dos vizinhos.
+    """
+    px = im.load()
+    w, h = im.size
+
+    def rosado(c):
+        r, g, b, a = c
+        return a > 10 and r > 150 and b > 140 and g < min(r, b) - 40
+
+    VIZ = ((1,0),(-1,0),(0,1),(0,-1),(1,1),(-1,-1),(1,-1),(-1,1))
+    alvos = []
+    for y in range(h):
+        for x in range(w):
+            if not rosado(px[x, y]):
+                continue
+            viz = [(x + dx, y + dy) for dx, dy in VIZ]
+            dentro = [(nx, ny) for nx, ny in viz if 0 <= nx < w and 0 <= ny < h]
+            n_rosa = sum(1 for nx, ny in dentro if rosado(px[nx, ny]))
+            if n_rosa > 1:
+                continue                      # faz parte de uma zona rosada = desenho
+            n_transp = len(viz) - len(dentro) + sum(1 for nx, ny in dentro if px[nx, ny][3] <= 10)
+            vizinhos_bons = [px[nx, ny] for nx, ny in dentro
+                             if px[nx, ny][3] > 200 and not rosado(px[nx, ny])]
+            alvos.append((x, y, n_transp, vizinhos_bons))
+
+    apagados = recoloridos = 0
+    for x, y, n_transp, bons in alvos:
+        if n_transp >= 5 or not bons:
+            r, g, b, a = px[x, y]
+            px[x, y] = (r, g, b, 0)
+            apagados += 1
+        else:
+            mr = sum(c[0] for c in bons) // len(bons)
+            mg = sum(c[1] for c in bons) // len(bons)
+            mb = sum(c[2] for c in bons) // len(bons)
+            px[x, y] = (mr, mg, mb, px[x, y][3])
+            recoloridos += 1
+    return im, apagados, recoloridos
+
+
 def chroma_key(im):
     im = im.convert('RGBA')
     px = im.load()
@@ -129,7 +179,12 @@ for caminho in sorted(BRUTOS.glob('card_art_*.png')):
     # 2ª limpeza já na escala final: o corte dos 8px está calibrado para aqui,
     # e a redução também cria specks novos ao amostrar bordas contaminadas
     final, sujos2 = limpa_sujidade(final)
+    final, fr_apag, fr_recol = limpa_franja(final)
     final.save(SPRITES / caminho.name)
-    total = sujos + sujos2
-    extra = f'  [limpou {sujos}px em alta + {sujos2}px na escala final]' if total else ''
+    partes = []
+    if sujos or sujos2:
+        partes.append(f'{sujos + sujos2}px soltos')
+    if fr_apag or fr_recol:
+        partes.append(f'franja {fr_apag} apagados / {fr_recol} recoloridos')
+    extra = '  [' + ', '.join(partes) + ']' if partes else ''
     print(f'{caminho.name}: {orig[0]}x{orig[1]} → {novo[0]}x{novo[1]}{extra}')

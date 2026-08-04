@@ -45,7 +45,7 @@ export const STAFF = [
 export const EQUIPAMENTOS = [
   {id:'freezer', n:'Freezer Novo', d:'+1 slot de staff (4 no total)', preco:8, icon:'queijo_frio'},
   {id:'estante', n:'Estante Extra', d:'+1 slot de receitas (4 no total)', preco:8, icon:'pao_base'},
-  {id:'fornecedor', n:'Fornecedor Direto', d:'todas as ofertas da loja custam −1€ (mín. 1€)', preco:7, icon:'cebola'},
+  {id:'fornecedor', n:'Fornecedor Direto', d:'ofertas da loja −1€ (mín. 1€)', preco:7, icon:'cebola'},
 ];
 
 export const ADJ = [

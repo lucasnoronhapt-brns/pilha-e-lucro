@@ -296,7 +296,8 @@ button{font-family:inherit;cursor:pointer;border:none}
 /* coleção visual (estilo Balatro) dentro do livro */
 .colgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
 .ccard{position:relative;aspect-ratio:210/294;background-size:100% 100%;background-repeat:no-repeat;cursor:pointer;transition:transform .08s}
-.ccard.equip,.scard.equip{aspect-ratio:210/254} /* card_equip.png é 210x254, não 210x294 como as outras molduras — evita esticar */
+/* card_equip.png é 183x254 (as outras molduras são 210x294) — sem isto, esticava */
+.ccard.equip,.scard.equip{aspect-ratio:183/254}
 .ccard:active{transform:scale(.95)}
 /* percentagens medidas nas próprias molduras: janela da arte 16%-61.5%,
    placa do texto 68.5%-91.2% — iguais nas quatro (receita/staff/equip/lendária) */
@@ -341,7 +342,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   width:76%;height:45.5%;object-fit:contain;image-rendering:pixelated;
 }
 .scard .stxt{
-  position:absolute;top:68.5%;bottom:8.8%;left:12%;right:12%;
+  position:absolute;top:68.5%;bottom:8.8%;left:12%;right:12%;overflow:hidden;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;text-align:center;
 }
