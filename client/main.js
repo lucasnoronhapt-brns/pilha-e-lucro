@@ -32,6 +32,20 @@ const CARD_ART = new Set([
 ]);
 const arteCarta = icon => CARD_ART.has(icon) ? `../assets/sprites/card_art_${icon}.png` : SPR[icon];
 
+/* Arte PRÓPRIA por carta (receita 'r', staff 's', equipamento 'e'), para as
+   cartas deixarem de reaproveitar o sprite de um ingrediente — o Freezer Novo
+   não devia mostrar uma fatia de queijo.
+   Para ativar uma: põe assets/sprites/card_art_<tipo>_<id>.png e acrescenta o
+   id ao Set do seu tipo. Sem isso, cai no sprite do ingrediente como antes. */
+const ARTE_PROPRIA = {
+  r: new Set([]),   // cheese, classico, salada, bacon2, molho3, pequeno
+  s: new Set([]),   // chefbacon, horta, estufa, balcao, maos, msecreto, turno
+  e: new Set([]),   // freezer, estante, fornecedor
+};
+const arteDaCarta = (tipo, o) => ARTE_PROPRIA[tipo] && ARTE_PROPRIA[tipo].has(o.id)
+  ? `../assets/sprites/card_art_${tipo}_${o.id}.png`
+  : arteCarta(o.icon);
+
 /* ============ RUN ============ */
 /* A seed vem do servidor (POST /api/run/start) — o cliente nunca a escolhe.
    Sem servidor (ex.: abrir só os estáticos), a run funciona offline com seed
@@ -97,7 +111,7 @@ function abrirInfo(emoji, o){
 }
 function renderCrew(){
   const c = $('crew'); c.innerHTML='';
-  const grupo = (emoji, lista, frame, max) => {
+  const grupo = (emoji, lista, frame, max, tipo) => {
     const g = document.createElement('div'); g.className='cgrupo';
     const cnt = document.createElement('span'); cnt.className='cnt';
     cnt.textContent = `${emoji} ${lista.length}/${max}`;
@@ -105,7 +119,7 @@ function renderCrew(){
     lista.forEach(o=>{
       const m = document.createElement('div'); m.className='mcard';
       m.style.backgroundImage = `url(${frame})`;
-      m.innerHTML = `<img src="${arteCarta(o.icon)}">`;
+      m.innerHTML = `<img src="${arteDaCarta(tipo, o)}">`;
       m.onclick = ()=>abrirInfo(emoji, o);
       g.appendChild(m);
     });
@@ -116,9 +130,9 @@ function renderCrew(){
     }
     c.appendChild(g);
   };
-  grupo('👤', G.staff, SPR.card_staff, Engine.staffMax(G));
-  grupo('📖', G.receitas, SPR.card_receita, Engine.receitaMax(G));
-  grupo('🔧', G.equip, SPR.card_equip, EQUIPAMENTOS.length); // M4: equipamentos, permanentes, não se vendem
+  grupo('👤', G.staff, SPR.card_staff, Engine.staffMax(G), 's');
+  grupo('📖', G.receitas, SPR.card_receita, Engine.receitaMax(G), 'r');
+  grupo('🔧', G.equip, SPR.card_equip, EQUIPAMENTOS.length, 'e'); // M4: equipamentos, permanentes, não se vendem
 }
 function renderStab(){
   const w = $('stabwrap'); w.innerHTML='';
@@ -395,7 +409,7 @@ function renderMeus(){
       const valor = Math.floor(o.preco/2);
       const m = document.createElement('div'); m.className='mcard';
       m.style.backgroundImage = `url(${frame})`;
-      m.innerHTML = `<span class="vprice">${valor}€</span><img src="${arteCarta(o.icon)}">`;
+      m.innerHTML = `<span class="vprice">${valor}€</span><img src="${arteDaCarta(tipo, o)}">`;
       m.onclick = ()=>abrirVenda(emoji, tipo, i, o, valor);
       box.appendChild(m);
     });
@@ -434,7 +448,7 @@ function mostrarLoja(){
     div.style.backgroundImage = `url(${FRAME[t]})`;
     div.innerHTML = `
       <span class="sprice">${preco}€</span>
-      <img class="sart" src="${arteCarta(o.icon)}">
+      <img class="sart" src="${arteDaCarta(t, o)}">
       <div class="stxt"><div class="sname">${o.n}</div><div class="sdesc">${o.d}</div></div>`;
     div.onclick = ()=>{
       const r = Engine.comprar(G, i);
@@ -681,11 +695,11 @@ function tutAdvanceAfterPlace(k){
 }
 
 /* ============ COLEÇÃO (livro visual estilo Balatro) ============ */
-function cartaColecao(frame, icon, nome, own, detalhe, extraClass){
+function cartaColecao(frame, src, nome, own, detalhe, extraClass){
   const c = document.createElement('div');
   c.className = extraClass ? `ccard ${extraClass}` : 'ccard';
   c.style.backgroundImage = `url(${frame})`;
-  c.innerHTML = `${own?'<span class="cown">✓</span>':''}<img class="cart" src="${arteCarta(icon)}"><div class="cnome">${nome}</div>`;
+  c.innerHTML = `${own?'<span class="cown">✓</span>':''}<img class="cart" src="${src}"><div class="cnome">${nome}</div>`;
   c.onclick = detalhe;
   return c;
 }
@@ -698,7 +712,7 @@ function abrirLivro(){
   let g = grid();
   RECEITAS.forEach(r=>{
     const own = G.receitas.some(x=>x.id===r.id);
-    g.appendChild(cartaColecao(SPR.card_receita, r.icon, r.n, own,
+    g.appendChild(cartaColecao(SPR.card_receita, arteDaCarta('r', r), r.n, own,
       ()=>abrirInfo('📖', {n:r.n, d:`${r.d} · ${r.preco>0?r.preco+'€ na loja':'receita inicial'}`})));
   });
 
@@ -706,7 +720,7 @@ function abrirLivro(){
   g = grid();
   STAFF.forEach(s=>{
     const own = G.staff.some(x=>x.id===s.id);
-    g.appendChild(cartaColecao(SPR.card_staff, s.icon, s.n, own,
+    g.appendChild(cartaColecao(SPR.card_staff, arteDaCarta('s', s), s.n, own,
       ()=>abrirInfo('👤', {n:s.n, d:`${s.d} · ${s.preco}€ na loja`})));
   });
 
@@ -714,7 +728,7 @@ function abrirLivro(){
   g = grid();
   EQUIPAMENTOS.forEach(e=>{
     const own = G.equip.some(x=>x.id===e.id);
-    g.appendChild(cartaColecao(SPR.card_equip, e.icon, e.n, own,
+    g.appendChild(cartaColecao(SPR.card_equip, arteDaCarta('e', e), e.n, own,
       ()=>abrirInfo('🔧', {n:e.n, d:`${e.d} · ${e.preco}€ na loja`}), 'equip'));
   });
 

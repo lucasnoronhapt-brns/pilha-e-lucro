@@ -298,9 +298,11 @@ button{font-family:inherit;cursor:pointer;border:none}
 .ccard{position:relative;aspect-ratio:210/294;background-size:100% 100%;background-repeat:no-repeat;cursor:pointer;transition:transform .08s}
 .ccard.equip,.scard.equip{aspect-ratio:210/254} /* card_equip.png é 210x254, não 210x294 como as outras molduras — evita esticar */
 .ccard:active{transform:scale(.95)}
-.ccard .cart{position:absolute;top:13%;left:50%;transform:translateX(-50%);width:76%;height:44%;object-fit:contain;image-rendering:pixelated}
+/* percentagens medidas nas próprias molduras: janela da arte 16%-61.5%,
+   placa do texto 68.5%-91.2% — iguais nas quatro (receita/staff/equip/lendária) */
+.ccard .cart{position:absolute;top:16%;left:50%;transform:translateX(-50%);width:76%;height:45.5%;object-fit:contain;image-rendering:pixelated}
 .ccard .cnome{
-  position:absolute;top:66%;bottom:6%;left:11%;right:11%;
+  position:absolute;top:68.5%;bottom:8.8%;left:11%;right:11%;
   display:flex;align-items:center;justify-content:center;text-align:center;
   font-size:11px;font-weight:800;color:var(--tinta);line-height:1.2;
 }
@@ -335,11 +337,11 @@ button{font-family:inherit;cursor:pointer;border:none}
 }
 .scard:active{transform:scale(.95)}
 .scard .sart{
-  position:absolute;top:13%;left:50%;transform:translateX(-50%);
-  width:76%;height:44%;object-fit:contain;image-rendering:pixelated;
+  position:absolute;top:16%;left:50%;transform:translateX(-50%);
+  width:76%;height:45.5%;object-fit:contain;image-rendering:pixelated;
 }
 .scard .stxt{
-  position:absolute;top:66%;bottom:4.5%;left:12%;right:12%;
+  position:absolute;top:68.5%;bottom:8.8%;left:12%;right:12%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:1px;text-align:center;
 }
