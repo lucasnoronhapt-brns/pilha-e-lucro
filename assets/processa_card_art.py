@@ -31,6 +31,51 @@ MAPA = {
     'tomate.png': 'tomate',
 }
 
+def limpa_sujidade(im):
+    """Remove blocos soltos que sobram do chroma-key, sem comer desenho.
+
+    Não chega olhar ao tamanho: as ondas de calor da Estufa têm 14px e são
+    legítimas, e os frascos do Mar de Molho estão desligados de propósito.
+    Por isso só cai o que estiver solto E for (a) rosado — resíduo de magenta
+    que passou à tangente no filtro — ou (b) minúsculo, abaixo de 8px.
+    """
+    from collections import deque
+    px = im.load()
+    w, h = im.size
+    visto = [[False] * w for _ in range(h)]
+    blocos = []
+    for y in range(h):
+        for x in range(w):
+            if visto[y][x]:
+                continue
+            if px[x, y][3] <= 10:
+                visto[y][x] = True
+                continue
+            fila = deque([(x, y)]); visto[y][x] = True; pts = []
+            while fila:
+                cx, cy = fila.popleft(); pts.append((cx, cy))
+                for dx, dy in ((1,0),(-1,0),(0,1),(0,-1),(1,1),(-1,-1),(1,-1),(-1,1)):
+                    nx, ny = cx + dx, cy + dy
+                    if 0 <= nx < w and 0 <= ny < h and not visto[ny][nx] and px[nx, ny][3] > 10:
+                        visto[ny][nx] = True; fila.append((nx, ny))
+            blocos.append(pts)
+    if len(blocos) <= 1:
+        return im, 0
+    blocos.sort(key=len, reverse=True)
+    apagados = 0
+    for bloco in blocos[1:]:
+        cores = [px[x, y] for x, y in bloco]
+        mr = sum(c[0] for c in cores) // len(cores)
+        mg = sum(c[1] for c in cores) // len(cores)
+        mb = sum(c[2] for c in cores) // len(cores)
+        rosado = mr > 120 and mb > 110 and mg < min(mr, mb) - 25
+        if rosado or len(bloco) < 8:
+            for x, y in bloco:
+                r, g, b, a = px[x, y]; px[x, y] = (r, g, b, 0)
+            apagados += len(bloco)
+    return im, apagados
+
+
 def chroma_key(im):
     im = im.convert('RGBA')
     px = im.load()
@@ -68,6 +113,7 @@ for bruto, icon in MAPA.items():
 print()
 for caminho in sorted(BRUTOS.glob('card_art_*.png')):
     im = chroma_key(Image.open(caminho))
+    im, sujos = limpa_sujidade(im)
     bbox = im.getbbox()
     if not bbox:
         print(f'AVISO: {caminho.name} ficou vazia depois do chroma-key — ignorada')
@@ -80,5 +126,10 @@ for caminho in sorted(BRUTOS.glob('card_art_*.png')):
     escala = TAM / max(quadro.size)
     novo = (max(1, round(quadro.width * escala)), max(1, round(quadro.height * escala)))
     final = quadro.resize(novo, Image.NEAREST)
+    # 2ª limpeza já na escala final: o corte dos 8px está calibrado para aqui,
+    # e a redução também cria specks novos ao amostrar bordas contaminadas
+    final, sujos2 = limpa_sujidade(final)
     final.save(SPRITES / caminho.name)
-    print(f'{caminho.name}: {orig[0]}x{orig[1]} → {novo[0]}x{novo[1]}')
+    total = sujos + sujos2
+    extra = f'  [limpou {sujos}px em alta + {sujos2}px na escala final]' if total else ''
+    print(f'{caminho.name}: {orig[0]}x{orig[1]} → {novo[0]}x{novo[1]}{extra}')

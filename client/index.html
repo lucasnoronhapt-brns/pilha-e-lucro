@@ -355,6 +355,30 @@ button{font-family:inherit;cursor:pointer;border:none}
 .scard.sold{opacity:.4;pointer-events:none}
 .scard.sold .sprice{background:var(--ok)}
 .scard.poor{filter:grayscale(.7);opacity:.6;pointer-events:none}
+
+/* ---------- Ecrã de abertura ----------
+   A arte é quadrada e as margens dissolvem num castanho liso #1D0C01. Usar
+   'contain' com essa MESMA cor de fundo continua a imagem sem costura visível
+   em qualquer proporção: nada é cortado, nem em 16:9 no PC nem em 9:16 no
+   telemóvel — só muda a quantidade de castanho à volta.
+   O painel vai para baixo (flex-end) para não tapar a torre de hambúrguer. */
+#intro{
+  background:#1D0C01 url('../assets/sprites/abertura.png') center/contain no-repeat;
+  align-items:flex-end;
+}
+#intro .panel{
+  background:rgba(18,9,3,.88);border-color:rgba(0,0,0,.55);
+  max-width:380px;
+}
+#intro .panel h2{font-size:21px;text-shadow:2px 2px 0 rgba(0,0,0,.55)}
+#intro .panel .sub{font-size:12px;opacity:.95}
+/* em ecrãs baixos (PC em paisagem) a imagem já ocupa a altura toda:
+   encolhe o painel para continuar a sobrar burger à vista */
+@media (max-height:560px){
+  #intro .panel{padding:12px 14px;max-width:340px}
+  #intro .panel h2{font-size:17px}
+  #intro .panel .go{padding:10px;font-size:13px}
+}
 </style>
 </head>
 <body>
