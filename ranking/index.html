@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pilha &amp; Lucro — Ranking</title>
+<title>Condimenta Burguer — Ranking</title>
 <style>
 /* Página de exibição para TV (sala de pausa): letras grandes, atualiza sozinha. */
 :root{
@@ -24,10 +24,13 @@ body::before{
 header,main,footer{position:relative;z-index:1;width:min(1100px,94vw)}
 header{
   text-align:center;padding:3.2vh 0 1.6vh;
-  font-size:clamp(22px,5.2vh,64px);font-weight:800;letter-spacing:2px;
+  /* min() dos dois eixos: em ecrãs em pé o vh sozinho fazia o título partir
+     em duas linhas ao calhas (ver .rrow) */
+  font-size:clamp(20px,min(5.2vh,6.4vw),64px);font-weight:800;letter-spacing:2px;
   text-shadow:3px 3px 0 var(--tinta);
 }
 header .burger{color:var(--mostarda)}
+header .sub{font-size:.45em;letter-spacing:6px;opacity:.85;margin-top:.25em}
 main{
   flex:1;min-height:0;background:var(--quadro);
   border:5px solid #6b4a2a;outline:4px solid var(--tinta);border-radius:14px;
@@ -68,7 +71,10 @@ footer .txt .url{color:var(--mostarda);font-size:.75em}
 </head>
 <body>
 
-<header><span class="burger">🍔</span> PILHA &amp; LUCRO · RANKING</header>
+<header>
+  <div><span class="burger">🍔</span> CONDIMENTA BURGUER</div>
+  <div class="sub">RANKING</div>
+</header>
 <main id="lista"><div class="rrow vazio">A carregar…</div></main>
 <footer>
   <div class="joga">

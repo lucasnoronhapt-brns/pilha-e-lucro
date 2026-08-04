@@ -1,4 +1,4 @@
-/* Client do Pilha & Lucro — só apresentação (DOM, animações, áudio).
+/* Client do Condimenta Burguer — só apresentação (DOM, animações, áudio).
    Toda a lógica de jogo vive em ../engine/ (uma única fonte de verdade).
    Math.random() aqui é permitido APENAS em efeitos visuais/áudio —
    nunca em nada que altere o estado da run. */
@@ -48,7 +48,7 @@ if(!QS.has('demo')) try{
   if(r.ok) RUN = await r.json();
 }catch(e){}
 const SEED = QS.has('demo') ? 42 : (RUN ? RUN.seed : crypto.getRandomValues(new Uint32Array(1))[0]);
-console.log('Pilha & Lucro — seed da run:', SEED, RUN ? `(servidor, run ${RUN.run_id})` : '(offline — sem ranking)');
+console.log('Condimenta Burguer — seed da run:', SEED, RUN ? `(servidor, run ${RUN.run_id})` : '(offline — sem ranking)');
 const G = Engine.novaRun(SEED);
 window.__run = G; // debug: vê o estado e o action_log na consola (__run.log)
 
