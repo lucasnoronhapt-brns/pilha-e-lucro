@@ -56,14 +56,23 @@ Combinações de hambúrguer. Mostrar o **resultado montado**, não os ingredien
 São **pessoas**. Retratos de meio corpo, com o utensílio ou ingrediente que os
 define — a carta tem moldura de crachá, por isso funcionam como fotos de pessoal.
 
+> ⚠️ **A cara tem de ficar no centro.** O jogo centra a imagem pelo conjunto do
+> desenho, não pela pessoa. Se o prompt pedir só "a segurar X", o ChatGPT põe um
+> objeto grande a um lado e a pessoa ao outro: o ficheiro fica centrado, mas a
+> cara aparece encostada a uma borda e a carta parece torta.
+>
+> Duas formas de evitar: **um objeto em cada mão** (foi o que salvou o Duplo
+> Turno) ou **o objeto pequeno à frente do peito**. Diz sempre no prompt que a
+> pessoa está de frente e centrada.
+
 | id | nome | prompt |
 |---|---|---|
-| `chefbacon` | Chef do Bacon | Cozinheiro de meio corpo com barrete de chef, a segurar uma frigideira com tiras de bacon a fritar, expressão orgulhosa. |
-| `horta` | Horta Própria | Pessoa de meio corpo com chapéu de palha e avental, a segurar um cesto de vime cheio de alface e tomates acabados de colher. |
+| `chefbacon` | Chef do Bacon | Cozinheiro de meio corpo **de frente e centrado**, com barrete de chef e expressão orgulhosa, a segurar com as duas mãos uma frigideira pequena com tiras de bacon **à frente do peito**. |
+| `horta` | Horta Própria | Pessoa de meio corpo **de frente e centrada**, com chapéu de palha e avental, a segurar com as duas mãos um cesto pequeno de alface e tomates **à frente do peito**. |
 | `estufa` | Estufa Quente | Cozinheiro de meio corpo a apontar um maçarico de cozinha a uma fatia de queijo que derrete, com ondas de calor à volta. |
 | `balcao` | Balcão Reforçado | Trabalhador robusto de meio corpo, braços cruzados, encostado a um balcão de aço reforçado com rebites. |
 | `maos` | Mãos Rápidas | Cozinheiro de meio corpo com as mãos desfocadas em movimento, várias linhas de velocidade, expressão concentrada. |
-| `msecreto` | Molho Secreto | Cozinheiro de meio corpo a piscar o olho, a segurar um frasco escuro sem rótulo com um líquido a brilhar lá dentro. |
+| `msecreto` | Molho Secreto | Cozinheiro de meio corpo **de frente e centrado**, a piscar o olho, a segurar com as duas mãos **à frente do peito** um frasco escuro sem rótulo com um líquido a brilhar. |
 | `turno` | Duplo Turno | Cozinheiro de meio corpo com olheiras e um sorriso cansado, a segurar uma caneca de café a fumegar numa mão e um despertador na outra. **Sem cenário nem parede — só a figura.** |
 
 > ⚠️ A primeira versão desta carta dizia "dois relógios **ao fundo**", e o ChatGPT
